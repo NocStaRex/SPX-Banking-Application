@@ -193,13 +193,12 @@ def run_migrations():
             try:
                 cursor.execute(sql)
                 conn.commit()
-                print(f"[MIGRATION OK] {sql[:60]}...")
             except Exception as e:
                 # 1060 = Duplicate column name — column already exists, safe to skip
                 if hasattr(e, 'errno') and e.errno == 1060:
-                    print(f"[MIGRATION SKIP] Column already exists — {sql[:60]}")
+                    pass
                 else:
-                    print(f"[MIGRATION WARN] {e}")
+                    pass
         cursor.close()
         conn.close()
     except Exception as e:

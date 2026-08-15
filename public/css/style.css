@@ -3356,6 +3356,201 @@ body:has(#forgot-password-view:not(.hidden)) .spx-global-back-container {
    GLOBAL OVERRIDES: HIDE NUMBER INPUT SPINNERS
    ======================================================================== */
 input[type="number"]::-webkit-outer-spin-button,
+    text-align: left;
+    margin-left: 0;
+    padding-left: 0;
+    color: #5c2d91;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+}
+.yono-sm-header {
+    color: #5c2d91;
+    font-size: 24px;
+    margin: 10px 0 20px 0;
+}
+.yono-sm-stepper {
+    display: flex;
+    align-items: center;
+    max-width: 600px;
+    margin-bottom: 24px;
+}
+.yono-sm-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+    z-index: 1;
+}
+.yono-sm-step-circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: #ddd;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 14px;
+}
+.yono-sm-step.active .yono-sm-step-circle {
+    background-color: #5c2d91;
+}
+.yono-sm-step-label {
+    font-size: 13px;
+    color: #666;
+}
+.yono-sm-step.active .yono-sm-step-label {
+    color: #5c2d91;
+    font-weight: 600;
+}
+.yono-sm-step-line {
+    flex: 1;
+    height: 2px;
+    background-color: #ddd;
+    margin: 0 15px;
+    margin-top: -20px;
+}
+.yono-sm-content-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 40px;
+}
+.yono-sm-form-container {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+}
+.yono-sm-section-title {
+    color: #333;
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    margin-top: 0;
+}
+.yono-sm-form-row {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 16px;
+}
+.yono-sm-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+}
+.yono-sm-form-group label {
+    font-size: 14px;
+    color: #555;
+    font-weight: 600;
+}
+.yono-sm-form-group input {
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    outline: none;
+    background-color: #f9f9f9;
+}
+.yono-sm-form-group input:focus {
+    border-color: #5c2d91;
+    background-color: white;
+}
+.yono-sm-form-group input[readonly] {
+    background-color: #f0f0f0;
+    cursor: not-allowed;
+}
+.yono-sm-input-with-btn {
+    display: flex;
+    gap: 10px;
+}
+.yono-sm-input-with-btn input {
+    flex: 1;
+}
+.yono-sm-verify-btn {
+    background: #5c2d91;
+    color: white;
+    border: none;
+    padding: 0 25px;
+    border-radius: 4px;
+    font-weight: 600;
+    cursor: pointer;
+}
+.yono-sm-side-container {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    justify-content: space-between;
+}
+.yono-sm-account-card {
+    border: 1px solid #5c2d91;
+    border-radius: 8px;
+    padding: 20px;
+    background-color: #faf8fc;
+    box-shadow: 0 4px 10px rgba(92,45,145,0.05);
+}
+.yono-sm-acc-number {
+    font-size: 18px;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 5px;
+}
+.yono-sm-acc-type {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 15px;
+}
+.yono-sm-acc-balance {
+    font-size: 16px;
+    color: #5c2d91;
+    font-weight: 600;
+}
+.yono-sm-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+}
+.yono-sm-btn-cancel {
+    background: transparent;
+    border: 2px solid #5c2d91;
+    color: #5c2d91;
+    padding: 12px 30px;
+    border-radius: 30px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+}
+.yono-sm-btn-proceed {
+    background: #5c2d91;
+    border: none;
+    color: white;
+    padding: 12px 40px;
+    border-radius: 30px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(92,45,145,0.2);
+}
+.yono-sm-btn-proceed:hover {
+    background: #4a154b;
+}
+
+
+/* ===================== MERGED PROFILE / TRANSACTION ENHANCEMENTS ===================== */
+.profile-page-container{max-width:1280px;margin:0 auto;padding:26px 34px 50px}.profile-breadcrumb{font-size:13px;color:#6b7280;margin-bottom:18px}.profile-page-header{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;margin-bottom:22px}.profile-page-header h1{margin:0;color:#2b1a3d;font-size:28px}.profile-page-header p{margin:6px 0 0;color:#6b7280}.profile-mid-card{background:#f7f3fb;border:1px solid #e3d9ef;border-radius:10px;padding:12px 18px;min-width:220px}.profile-mid-card span{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#7e57c2;font-weight:700}.profile-mid-card strong{font-family:'Roboto Mono',monospace;font-size:18px;color:#332244}.profile-layout-grid{display:grid;grid-template-columns:250px 1fr;gap:22px;align-items:start}.profile-sidebar{background:#fff;border:1px solid #e8e3ed;border-radius:10px;padding:24px;text-align:center;box-shadow:0 5px 20px rgba(40,20,60,.06)}.profile-avatar-large{width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;background:#7e57c2;color:#fff;font-size:24px;font-weight:700}.profile-sidebar h2{font-size:18px;margin:0;color:#2b1a3d}.profile-username{color:#8b7d96;font-size:13px;margin:5px 0 20px}.profile-sidebar-stat{text-align:left;padding:12px 0;border-top:1px solid #eee}.profile-sidebar-stat span{display:block;font-size:10px;color:#8b7d96;text-transform:uppercase;font-weight:700}.profile-sidebar-stat strong{display:block;margin-top:4px;font-size:12px;color:#2f2438;word-break:break-word}.profile-status-active{color:#15803d!important}.profile-section-heading{font-size:16px;font-weight:800;color:#30213d;margin:4px 0 18px}.profile-form-row{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px}.profile-textarea{min-height:88px;resize:vertical;padding-top:22px}.profile-save-btn{border:0;border-radius:6px;background:#6d3da8;color:#fff;font-weight:700;padding:12px 24px;cursor:pointer}.profile-save-btn:disabled{opacity:.55;cursor:not-allowed}.yono-custom-date-row{display:none;gap:12px;margin-top:12px}.yono-custom-date-row.active{display:flex}.yono-custom-date-row input{padding:10px;border:1px solid #ddd;border-radius:5px}.statement-format-row{display:flex;gap:10px;align-items:end}.yono-download-btn:disabled{opacity:.55;cursor:not-allowed}.receipt-box{margin-top:24px;padding:22px;border:1px solid #ddd;border-radius:10px;background:#fff}.receipt-box h3{margin-top:0}.receipt-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px}.receipt-grid span{color:#777}.receipt-grid strong{color:#222}.send-money-error{display:none;color:#b91c1c;background:#fff1f2;border:1px solid #fecdd3;padding:10px;border-radius:6px;margin-top:10px;font-size:13px}.yono-recipient-verified{display:none;color:#15803d;font-size:13px;margin-top:8px}.yono-review-panel{display:none}.yono-review-panel.active{display:block}.yono-sm-form-container.review-mode .yono-sm-form-row,.yono-sm-form-container.review-mode .yono-sm-section-title{display:none}@media(max-width:900px){.profile-layout-grid{grid-template-columns:1fr}.profile-page-header{flex-direction:column}.profile-form-row{grid-template-columns:1fr}.profile-mid-card{width:100%;box-sizing:border-box}.receipt-grid{grid-template-columns:1fr}}
+
+/* ========================================================================
+   SPX LOAN MANAGEMENT — UI UPGRADE
+   ======================================================================== */
+.spx-loan-page{max-width:1200px;margin:0 auto;padding:28px 18px 60px;color:#242424}.spx-loan-breadcrumb{display:flex;gap:9px;align-items:center;font-size:12px;color:#777;margin-bottom:18px}.spx-loan-breadcrumb a{color:#5c2d91;text-decoration:none}.spx-loan-hero{display:flex;justify-content:space-between;gap:24px;align-items:center;background:linear-gradient(135deg,#5c2d91,#7a3eb0);color:#fff;border-radius:18px;padding:28px 30px;box-shadow:0 12px 30px rgba(92,45,145,.18);margin-bottom:22px}.spx-loan-kicker{font-size:11px;letter-spacing:1.7px;font-weight:800;opacity:.78}.spx-loan-hero h1{margin:5px 0 8px;font-size:30px}.spx-loan-hero p{margin:0;max-width:700px;opacity:.9;line-height:1.55}.spx-loan-hero-account{min-width:230px;padding:16px 18px;border:1px solid rgba(255,255,255,.22);border-radius:13px;background:rgba(255,255,255,.1)}.spx-loan-hero-account span,.spx-loan-hero-account small{display:block;opacity:.78;font-size:11px}.spx-loan-hero-account strong{display:block;font-family:'Roboto Mono',monospace;font-size:14px;margin:5px 0}.spx-loan-grid{display:grid;grid-template-columns:minmax(0,1fr) 310px;gap:22px}.spx-loan-card{background:#fff;border:1px solid #ece9ef;border-radius:16px;padding:24px;box-shadow:0 5px 18px rgba(31,20,43,.05)}.spx-loan-card-heading{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;margin-bottom:20px}.spx-loan-card h2{font-size:19px;margin:0 0 5px}.spx-loan-card-heading p,.spx-loan-info-card p{margin:0;color:#777;font-size:12px;line-height:1.5}.spx-loan-step-badge{font-size:11px;font-weight:800;color:#5c2d91;background:#f3eefa;padding:7px 11px;border-radius:999px;white-space:nowrap}.spx-loan-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:17px}.spx-loan-form-grid label{display:flex;flex-direction:column;gap:7px;font-size:12px;font-weight:700;color:#444}.spx-loan-form-grid input,.spx-loan-form-grid select,.spx-loan-form-grid textarea{font:inherit;font-weight:400;border:1px solid #ddd;border-radius:8px;padding:12px 13px;background:#fff;color:#333;outline:none}.spx-loan-form-grid input:focus,.spx-loan-form-grid select:focus,.spx-loan-form-grid textarea:focus{border-color:#6d35a0;box-shadow:0 0 0 3px rgba(109,53,160,.08)}.spx-loan-full{grid-column:1/-1}.spx-loan-preview{display:flex;align-items:center;gap:12px;margin-top:18px;padding:16px;border-radius:10px;background:#f8f6fb;border:1px solid #eee6f5}.spx-loan-preview span{font-size:12px;color:#666}.spx-loan-preview strong{font-size:20px;color:#5c2d91}.spx-loan-preview small{margin-left:auto;color:#777}.spx-loan-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px}.spx-loan-primary,.spx-loan-secondary{border-radius:8px;padding:11px 18px;font-weight:700;cursor:pointer;border:1px solid #ddd}.spx-loan-primary{background:#5c2d91;color:#fff;border-color:#5c2d91}.spx-loan-secondary{background:#fff;color:#5c2d91}.spx-loan-rate-row{display:flex;justify-content:space-between;padding:13px 0;border-bottom:1px solid #f0edf2;font-size:12px}.spx-loan-rate-row strong{color:#5c2d91}.spx-loan-info-card hr{border:0;border-top:1px solid #eee;margin:20px 0}.spx-loan-empty{text-align:center;padding:30px;color:#777;background:#fafafa;border-radius:10px}.spx-loan-record{border:1px solid #ece9ef;border-radius:12px;padding:17px;margin-bottom:12px}.spx-loan-record-top{display:flex;justify-content:space-between;gap:12px}.spx-loan-record h3{margin:0;font-size:14px}.spx-loan-status{font-size:10px;font-weight:800;padding:5px 9px;border-radius:999px;background:#f3f4f6}.spx-loan-status.pending{background:#fff7df;color:#9a6700}.spx-loan-status.approved{background:#eef6ff;color:#1d5d9b}.spx-loan-status.active{background:#eaf8ef;color:#16753a}.spx-loan-status.rejected{background:#fff0f0;color:#b42318}.spx-loan-status.closed{background:#f1f1f1;color:#555}.spx-loan-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}.spx-loan-metric{background:#faf9fb;border-radius:8px;padding:10px}.spx-loan-metric span{display:block;font-size:10px;color:#777}.spx-loan-metric strong{display:block;font-size:13px;margin-top:4px}.spx-loan-review{border-color:#d9c6e9;background:#fcf9ff}.spx-loan-review-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.spx-loan-review-item{background:#fff;border:1px solid #eee;padding:12px;border-radius:8px}.spx-loan-review-item span{display:block;font-size:10px;color:#777}.spx-loan-review-item strong{display:block;margin-top:4px;font-size:13px}.spx-loan-payment-box{display:flex;gap:10px;align-items:end;flex-wrap:wrap}.spx-loan-payment-box label{font-size:11px;color:#666}.spx-loan-payment-box select,.spx-loan-payment-box input{display:block;margin-top:6px;border:1px solid #ddd;border-radius:8px;padding:10px}.spx-loan-table{width:100%;border-collapse:collapse;font-size:11px;margin-top:12px}.spx-loan-table th,.spx-loan-table td{text-align:left;padding:10px;border-bottom:1px solid #eee}.spx-loan-table th{color:#777;font-size:10px}.spx-loan-receipt{background:#f7fbf8;border:1px solid #ccebd6;border-radius:10px;padding:14px;margin-top:12px;font-size:12px}@media(max-width:850px){.spx-loan-grid{grid-template-columns:1fr}.spx-loan-hero{flex-direction:column;align-items:flex-start}.spx-loan-hero-account{width:100%;box-sizing:border-box}.spx-loan-metrics{grid-template-columns:1fr 1fr}}@media(max-width:600px){.spx-loan-form-grid,.spx-loan-review-grid{grid-template-columns:1fr}.spx-loan-full{grid-column:auto}.spx-loan-preview{flex-direction:column;align-items:flex-start}.spx-loan-preview small{margin-left:0}.spx-loan-card{padding:17px}}
+
+/* ========================================================================
+   GLOBAL OVERRIDES: HIDE NUMBER INPUT SPINNERS
+   ======================================================================== */
+input[type="number"]::-webkit-outer-spin-button,
 input[type="number"]::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
@@ -3364,4 +3559,11 @@ input[type="number"]::-webkit-inner-spin-button {
 input[type="number"] {
   -moz-appearance: textfield;
   appearance: textfield;
+}
+
+/* Prevent overflow in loan preview container */
+.spx-loan-preview {
+    overflow-wrap: break-word;
+    word-break: break-all;
+    max-width: 100%;
 }

@@ -5,23 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SPX BANK - Loans</title>
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='assets/favicon/favicon.png') }}">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
 <div id="toast-container" class="toast-container"></div>
 <div class="portal-wrapper">
-    <div class="spx-top-nav"><div class="spx-top-nav-container"><div class="spx-top-nav-left"><span class="spx-top-tab">Banking</span></div><div class="spx-top-nav-right">
-        <a href="#" class="spx-top-link spx-icon-link" onclick="triggerQuickAction('Get Help')">Get Help</a><a href="tel:1800111101" class="spx-top-link">1800-11-1101</a><span class="spx-top-link">English</span><span class="spx-top-divider">|</span><button class="spx-font-btn">A-</button><button class="spx-font-btn">A</button><button class="spx-font-btn">A+</button><span class="spx-top-divider">|</span><button class="spx-logout-btn" onclick="handleLogout()">Logout</button>
-    </div></div></div>
-    <header class="spx-main-header"><div class="spx-header-container">
-        <div class="spx-logo-block" onclick="window.location.href='/home/landingPage/homePage'"><span class="spx-text">SPX BANK</span><span class="net-banking-tag">NET-BANKING</span></div>
-        <nav class="spx-main-nav"><div class="spx-nav-menu logged-in-menu">
-            <a href="/home/landingPage/homePage" class="spx-nav-item">Overview</a><a href="/home/landingPage/manageRelationship/transactionAccounts" class="spx-nav-item">Accounts</a><a id="nav-payments-tab" class="spx-nav-item" href="#">Payments</a><a id="nav-deposits-tab" class="spx-nav-item" href="#">Deposits</a><a id="nav-loans-tab" class="spx-nav-item active" href="/home/landingPage/loans">Loans</a><a id="nav-cards-tab" class="spx-nav-item" href="#">Cards</a><a id="nav-investments-tab" class="spx-nav-item" href="#">Investments</a><a id="nav-insurance-tab" class="spx-nav-item" href="#">Insurance</a><a id="nav-services-tab" class="spx-nav-item" href="#">Services</a>
-        </div></nav>
-        {% include 'components/mega_menu.html' %}{% include 'components/deposits_mega_menu.html' %}{% include 'components/loans_mega_menu.html' %}{% include 'components/cards_mega_menu.html' %}{% include 'components/investments_mega_menu.html' %}{% include 'components/insurance_mega_menu.html' %}{% include 'components/services_mega_menu.html' %}{% include 'components/search_modal.html' %}{% include 'components/notification_modal.html' %}
-        <div class="spx-header-actions"><button class="spx-header-icon-btn" id="search-trigger-btn">⌕</button><button class="spx-header-icon-btn" id="notification-trigger-btn">♢</button><a href="/home/landingPage/profilePage/services/manageProfile/personalDetails" class="spx-user-badge"><span class="spx-avatar-initials" id="dash-avatar">{{ user_initials }}</span><span class="spx-user-profile-label">My Profile</span></a></div>
-    </div></header>
-
+    {% include 'components/header.html' %}
     <main class="spx-portal-body">
       <div class="spx-loan-page">
         <div class="spx-loan-breadcrumb"><a href="/home/landingPage/homePage">Home</a><span>›</span><a href="/home/landingPage/manageRelationship/transactionAccounts">Relationship Overview</a><span>›</span><strong>Loans</strong></div>
@@ -33,11 +26,11 @@
             <form id="loan-application-form" onsubmit="submitLoanApplication(event)">
               <div class="spx-loan-form-grid">
                 <label>Loan Type<select id="loan-type" onchange="updateLoanRate()"><option value="PERSONAL">Personal Loan</option><option value="HOME">Home Loan</option><option value="EDUCATION">Education Loan</option><option value="GOLD">Gold Loan</option><option value="LOAN AGAINST MUTUAL FUND">Loan Against Mutual Fund</option><option value="OVERDRAFT AGAINST DEPOSIT">Overdraft against Deposit</option></select></label>
-                <label>Loan Amount (₹)<input id="loan-amount" type="number" min="10000" step="1000" placeholder="Minimum ₹10,000" oninput="calculateLoanPreview()" required></label>
+                <label>Loan Amount (₹)<input id="loan-amount" type="number" min="0" step="1000" placeholder="Minimum ₹10,000" onwheel="this.blur()" oninput="calculateLoanPreview()" required></label>
                 <label>Tenure (months)<select id="loan-tenure" onchange="calculateLoanPreview()"><option value="12">12 months</option><option value="24">24 months</option><option value="36">36 months</option><option value="48">48 months</option><option value="60" selected>60 months</option><option value="84">84 months</option><option value="120">120 months</option><option value="180">180 months</option><option value="240">240 months</option><option value="360">360 months</option></select></label>
                 <label>Employment Type<select id="loan-employment" required><option value="">Select</option><option>Salaried</option><option>Self Employed</option><option>Business Owner</option><option>Student</option><option>Professional</option><option>Retired</option></select></label>
-                <label>Monthly Income (₹)<input id="loan-income" type="number" min="1" step="100" placeholder="e.g. 50000" required></label>
-                <label>Existing EMI (₹)<input id="loan-existing-emi" type="number" min="0" step="100" value="0" placeholder="0"></label>
+                <label>Monthly Income (₹)<input id="loan-income" type="number" min="0" step="100" placeholder="e.g. 50000" onwheel="this.blur()" required></label>
+                <label>Existing EMI (₹)<input id="loan-existing-emi" type="number" min="0" step="100" value="0" placeholder="0" onwheel="this.blur()"></label>
                 <label class="spx-loan-full">Purpose / Reason<textarea id="loan-purpose" rows="3" placeholder="Tell us briefly why you need the loan"></textarea></label>
               </div>
               <div id="loan-calculator-preview" class="spx-loan-preview"><span>Estimated EMI</span><strong>Enter amount to calculate</strong><small>Interest rate will be based on the selected loan product.</small></div>

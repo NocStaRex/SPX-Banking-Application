@@ -37,7 +37,7 @@
                     <div class="yono-sm-form-group" style="flex:1"><label>Account Name</label><div class="yono-sm-input-with-btn"><input id="send-recipient-name" type="text" readonly placeholder="Name will appear after verification"><button type="button" id="send-verify-btn" class="yono-sm-verify-btn" onclick="verifySendBeneficiary()">Verify</button></div><div id="send-recipient-verified" class="yono-recipient-verified">✓ Recipient verified</div></div>
                 </div>
                 <div class="yono-sm-form-row">
-                    <div class="yono-sm-form-group" style="max-width:50%"><label>Amount (₹)</label><input id="send-amount" type="number" min="1000" step="0.01" placeholder="Minimum ₹1,000"></div>
+                    <div class="yono-sm-form-group" style="max-width:50%"><label>Amount (₹)</label><input id="send-amount" type="number" min="1000" step="0.01" placeholder="Minimum ₹1,000" onwheel="this.blur()"></div>
                 </div>
                 <div class="yono-sm-form-row"><div class="yono-sm-form-group"><label>Note (Optional)</label><input id="send-note" type="text" maxlength="255" placeholder="Reason / note for this transfer"></div></div>
                 <div id="send-error" class="send-money-error"></div>

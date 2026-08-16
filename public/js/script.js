@@ -546,8 +546,48 @@ async function sendRealOtpEmail(targetEmail, action) {
 }
 
 function closeOtpModal() {
-    document.getElementById('otp-modal-overlay').classList.add('hidden');
-    if (otpTimerInterval) clearInterval(otpTimerInterval);
+    // 1. Hide the OTP drawer
+    const otpDrawer = document.getElementById('otp-modal-overlay');
+    if (otpDrawer) {
+        otpDrawer.classList.add('hidden');
+    }
+
+    // 2. Clear running timer
+    if (typeof otpTimerInterval !== 'undefined' && otpTimerInterval) {
+        clearInterval(otpTimerInterval);
+        otpTimerInterval = null;
+    }
+    if (typeof otpExpiryTimestamp !== 'undefined') {
+        otpExpiryTimestamp = 0;
+    }
+
+    // 3. Clear all OTP input fields
+    document.querySelectorAll('.otp-box, .otp-digit-input, #otp-input').forEach(input => {
+        input.value = '';
+    });
+
+    // 4. Wipe login / registration form inputs completely
+    document.querySelectorAll('form').forEach(form => form.reset());
+    
+    // Explicit fallback for known IDs
+    const fieldIds = [
+        'login-username', 'login-password', 'login-captcha-input',
+        'reg-firstname', 'reg-lastname', 'reg-email', 'reg-username', 'reg-password', 'reg-captcha-input',
+        'reset-email', 'reset-captcha-input'
+    ];
+    fieldIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+    });
+
+    // 5. Trigger fresh Captcha generation
+    if (typeof generateCaptcha === 'function') {
+        ['login', 'reg', 'reset'].forEach(type => {
+            if (document.getElementById(`${type}-captcha-canvas`)) {
+                generateCaptcha(type);
+            }
+        });
+    }
 }
 
 function startOtpTimer() {

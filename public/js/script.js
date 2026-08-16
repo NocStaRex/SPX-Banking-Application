@@ -10,7 +10,7 @@ let currentOtpCode = '';
 let pendingOtpAction = null; // 'LOGIN', 'REGISTER', 'RESET_PASSWORD'
 let pendingPayload = null;
 let otpTimerInterval = null;
-let otpTimeLeft = 120; // 2 minutes
+let otpExpiryTimestamp = 0;
 let viewHistory = ['login']; // Navigation history stack for Back button
 
 const captchas = {
@@ -552,25 +552,60 @@ function closeOtpModal() {
 
 function startOtpTimer() {
     if (otpTimerInterval) clearInterval(otpTimerInterval);
-    otpTimeLeft = 300;
-    const timerDisplay = document.getElementById('otp-countdown');
-    const resendBtn = document.getElementById('resend-otp-btn');
-    resendBtn.disabled = true;
+    
+    const otpDuration = (pendingOtpAction === 'LOGIN') ? 60 : 120;
+    otpExpiryTimestamp = Date.now() + otpDuration * 1000;
+    
+    const wrapper = document.getElementById('resend-wrapper');
+    if (wrapper) {
+        wrapper.innerHTML = `Resend OTP in <span id="countdown-display"></span>`;
+        wrapper.classList.add('resend-disabled');
+    }
+    
+    const proceedBtn = document.getElementById('btn-verify-otp');
+    if (proceedBtn) proceedBtn.disabled = false;
 
-    otpTimerInterval = setInterval(() => {
-        otpTimeLeft--;
-        const mins = Math.floor(otpTimeLeft / 60).toString().padStart(2, '0');
-        const secs = (otpTimeLeft % 60).toString().padStart(2, '0');
-        timerDisplay.textContent = `${mins}:${secs}`;
-
-        if (otpTimeLeft <= 0) {
-            clearInterval(otpTimerInterval);
-            timerDisplay.textContent = '00:00';
-            resendBtn.disabled = false;
-            showToast('OTP expired. Click Resend Gmail OTP.', 'error');
-        }
-    }, 1000);
+    updateOtpTimerDisplay();
+    otpTimerInterval = setInterval(updateOtpTimerDisplay, 1000);
 }
+
+function updateOtpTimerDisplay() {
+    if (!otpExpiryTimestamp) return;
+    
+    const now = Date.now();
+    const timeLeft = Math.max(0, Math.floor((otpExpiryTimestamp - now) / 1000));
+    const displaySpan = document.getElementById('countdown-display');
+    
+    if (displaySpan) {
+        if (pendingOtpAction === 'LOGIN') {
+            displaySpan.textContent = `${timeLeft}s`;
+        } else {
+            const mins = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+            const secs = (timeLeft % 60).toString().padStart(2, '0');
+            displaySpan.textContent = `${mins}:${secs}`;
+        }
+    }
+
+    if (timeLeft <= 0) {
+        if (otpTimerInterval) clearInterval(otpTimerInterval);
+        otpExpiryTimestamp = 0;
+        
+        const wrapper = document.getElementById('resend-wrapper');
+        if (wrapper) {
+            wrapper.innerHTML = `<a href="javascript:void(0)" id="resend-otp-btn" style="color: #38bdf8; font-weight: 600; text-decoration: underline; cursor: pointer;" onclick="resendOtpCode()">Resend OTP</a>`;
+            wrapper.classList.remove('resend-disabled');
+        }
+        
+        const proceedBtn = document.getElementById('btn-verify-otp');
+        if (proceedBtn) proceedBtn.disabled = true;
+    }
+}
+
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && otpExpiryTimestamp > 0) {
+        updateOtpTimerDisplay();
+    }
+});
 
 async function resendOtpCode() {
     const targetEmail = document.getElementById('otp-target-display').textContent;

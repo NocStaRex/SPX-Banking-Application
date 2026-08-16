@@ -340,9 +340,11 @@
                             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                         </button>
                     </div>
-                    <div class="spx-otp-timer-row">
-                        <span class="spx-otp-timer-text">Resend OTP in <strong id="otp-countdown">35s</strong></span>
-                        <button id="resend-otp-btn" class="spx-otp-resend-btn" onclick="resendOtpCode()" disabled>Resend OTP</button>
+                    <div class="otp-resend-container" style="margin-top: 15px; font-size: 13px;">
+                        <span class="text-muted" style="color: #cbd5e1;">Didn't receive the code? </span>
+                        <span id="resend-wrapper" class="resend-disabled" style="color: #38bdf8;">
+                            Resend OTP in <span id="countdown-display">60s</span>
+                        </span>
                     </div>
                     <div class="spx-otp-submit-row">
                         <button type="button" class="spx-btn-otp-proceed" id="btn-verify-otp" onclick="submitOtpVerification()">

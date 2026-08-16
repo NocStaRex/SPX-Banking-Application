@@ -234,20 +234,20 @@ backfill_customer_identity()
 def get_email_template(action, first_name, otp):
     subject = "Login Verification OTP"
     heading = "Verify your SPX Bank login"
-    body_desc = "Use the OTP below to complete your sign-in. This code is valid for 5 minutes."
+    body_desc = "Use the OTP below to complete your sign-in. This code is valid for 1 minute."
     security_note = "🔒 Never share this OTP with anyone, including SPX Bank staff."
     footer_text = "If you didn't request this code, you can safely ignore this email."
 
     if action == 'REGISTER':
         subject = "Registration Verification OTP"
         heading = "Verify your email address"
-        body_desc = "Use the OTP below to verify your email and complete your SPX Bank account registration. This code is valid for 5 minutes."
+        body_desc = "Use the OTP below to verify your email and complete your SPX Bank account registration. This code is valid for 2 minutes."
         security_note = "🔒 Never share this OTP with anyone, including SPX Bank staff."
         footer_text = "If you didn't attempt to create an account with SPX Bank, please ignore this email."
     elif action == 'RESET_PASSWORD':
         subject = "Password Reset OTP"
         heading = "Reset your SPX Bank password"
-        body_desc = "We received a request to reset your netbanking password. Use the code below to proceed. Valid for 5 minutes."
+        body_desc = "We received a request to reset your netbanking password. Use the code below to proceed. Valid for 2 minutes."
         security_note = "🔒 SPX Bank will never ask for this code. Do not share it with anyone."
         footer_text = "If you didn't request a password reset, please ignore this email or secure your account."
 
@@ -800,7 +800,10 @@ def send_otp():
             return jsonify({'success': False, 'message': 'Login verification session expired. Please log in again.'}), 403
 
     otp = str(random.randint(100000, 999999))
-    expires_at = datetime.now() + timedelta(minutes=5)
+    if action == 'LOGIN':
+        expires_at = datetime.now() + timedelta(seconds=60)
+    else:
+        expires_at = datetime.now() + timedelta(seconds=120)
     
     first_name = frontend_username if frontend_username else "Customer"
 
@@ -856,7 +859,7 @@ def verify_otp():
             return jsonify({'success': False, 'message': 'No pending OTP found'})
 
         if record['expires_at'] < datetime.now():
-            return jsonify({'success': False, 'message': 'OTP expired'})
+            return jsonify({'success': False, 'message': 'OTP has expired. Please click Resend OTP.'})
 
         if record['otp'] == otp:
             cursor.execute("UPDATE otps SET used=TRUE WHERE id=%s", (record['id'],))

@@ -250,6 +250,12 @@ def get_email_template(action, first_name, otp):
         body_desc = "We received a request to reset your netbanking password. Use the code below to proceed. Valid for 2 minutes."
         security_note = "🔒 SPX Bank will never ask for this code. Do not share it with anyone."
         footer_text = "If you didn't request a password reset, please ignore this email or secure your account."
+    elif action == 'LOAN_VERIFY':
+        subject = "Verification OTP - SPX Bank"
+        heading = "Verify your SPX Bank Account"
+        body_desc = "Use the OTP below to complete your verification request."
+        security_note = "🔒 Never share this OTP with anyone, including SPX Bank staff."
+        footer_text = "If you didn't request this verification, please ignore this email."
 
     plain_text = f"{heading}\n\n{body_desc}\n\nVerification Code: {otp}\n\n{security_note}"
 
@@ -618,6 +624,35 @@ def personal_loan_apply_page():
     if not user or user['account_status'] != 'ACTIVE':
         return redirect('/registration/welcome')
     return render_template('loans_personal_apply.html', user=user, user_initials=user['initials'], account_number=user['account_number'], balance=user['balance'])
+
+@app.route('/api/loans/send-otp', methods=['POST'])
+@login_required
+def send_loan_otp():
+    user = get_customer_context(flask_session['user_id'])
+    if not user:
+        return jsonify({'status': 'error', 'message': 'User not found'}), 404
+        
+    email = user['email']
+    otp = str(random.randint(100000, 999999))
+    flask_session['loan_flow_otp'] = otp
+    
+    subject, html_body, plain_text = get_email_template('LOAN_VERIFY', user['first_name'], otp)
+    send_real_email(email, subject, html_body, plain_text)
+    
+    return jsonify({'status': 'success', 'message': 'OTP sent'})
+
+@app.route('/api/loans/verify-otp', methods=['POST'])
+@login_required
+def verify_loan_otp():
+    data = request.json
+    submitted_otp = data.get('otp')
+    saved_otp = flask_session.get('loan_flow_otp')
+    
+    if saved_otp and str(submitted_otp) == str(saved_otp):
+        flask_session['loan_flow_verified'] = True
+        return jsonify({'status': 'success'})
+    else:
+        return jsonify({'status': 'error', 'message': 'Invalid OTP'}), 400
 # -------------------
 
 @app.route('/api/register', methods=['POST'])
@@ -1310,13 +1345,14 @@ def customer_calculate_loan():
     data = request.json or {}
     loan_type = str(data.get('loan_type','PERSONAL')).strip().upper()
     try:
-        amount = Decimal(str(data.get('amount', 0) or 0))
+        amount_str = str(data.get('amount', 0) or 0).replace(',', '')
+        amount = Decimal(amount_str)
         tenure = int(data.get('tenure_months', 0) or 0)
     except Exception:
         return jsonify({'success': False, 'message': 'Enter a valid amount and tenure.'}), 400
     rate = Decimal(str(data.get('interest_rate') or LOAN_RATES.get(loan_type, 12.50)))
-    if amount < Decimal('10000') or tenure < 6 or tenure > 360:
-        return jsonify({'success': False, 'message': 'Loan amount must be at least ₹10,000 and tenure must be between 6 and 360 months.'}), 400
+    if amount < Decimal('10000') or amount > Decimal('10000000') or tenure < 6 or tenure > 360:
+        return jsonify({'success': False, 'message': 'Loan amount must be between ₹10,000 and ₹1 Crore and tenure must be between 6 and 360 months.'}), 400
     emi = calculate_loan_emi(amount, rate, tenure)
     total = (emi * tenure).quantize(Decimal('0.01'))
     interest = (total - amount).quantize(Decimal('0.01'))
@@ -1329,7 +1365,8 @@ def customer_apply_loan():
     user_id = flask_session['user_id']
     loan_type = str(data.get('loan_type','PERSONAL')).strip().upper()
     try:
-        amount = Decimal(str(data.get('amount', 0) or 0))
+        amount_str = str(data.get('amount', 0) or 0).replace(',', '')
+        amount = Decimal(amount_str)
         tenure = int(data.get('tenure_months', 0) or 0)
         monthly_income = Decimal(str(data.get('monthly_income', 0) or 0))
         existing_emi = Decimal(str(data.get('existing_emi', 0) or 0))
@@ -1339,8 +1376,8 @@ def customer_apply_loan():
     employment_type = str(data.get('employment_type','')).strip()
     if loan_type not in LOAN_RATES:
         return jsonify({'success': False, 'message': 'Invalid loan type.'}), 400
-    if amount < Decimal('10000') or amount > Decimal('100000000'):
-        return jsonify({'success': False, 'message': 'Loan amount must be between ₹10,000 and ₹10 crore.'}), 400
+    if amount < Decimal('10000') or amount > Decimal('10000000'):
+        return jsonify({'success': False, 'message': 'Loan amount must be between ₹10,000 and ₹1 Crore.'}), 400
     if tenure < 6 or tenure > 360:
         return jsonify({'success': False, 'message': 'Tenure must be between 6 and 360 months.'}), 400
     if monthly_income <= 0:

@@ -340,7 +340,7 @@
                   <label class="form-label">Email Address</label>
                   <div style="display: flex; gap: 16px;">
                       <input type="text" id="user-email-input" class="form-control" value="{{ user.email or '' }}" readonly style="flex: 1; height: 42px; font-size: 14px; padding: 0 16px;">
-                      <button type="button" onclick="mockSendOTP()" id="btn-send-otp" style="padding: 0 24px; height: 42px; font-size: 14px; border-radius: 8px; background: #5a287d; color: white; border: none; font-weight: 600; cursor: pointer; white-space: nowrap;">Send OTP</button>
+                      <button type="button" onclick="sendLoanOTP()" id="btn-send-otp" style="padding: 0 24px; height: 42px; font-size: 14px; border-radius: 8px; background: #5a287d; color: white; border: none; font-weight: 600; cursor: pointer; white-space: nowrap;">Send OTP</button>
                   </div>
               </div>
               
@@ -350,7 +350,7 @@
                   <div id="otp-section">
                       <div class="otp-group" style="display: flex; gap: 16px;">
                           <input type="text" class="form-control" id="mock-otp-input" placeholder="Enter OTP" style="flex: 1; max-width: 280px; height: 42px; font-size: 14px; padding: 0 16px;">
-                          <button type="button" style="padding: 0 32px; height: 42px; font-size: 14px; background: #5a287d; color: white; border-radius: 8px; font-weight: 600; border: none; cursor: pointer;" onclick="mockVerifyOTP()">Verify</button>
+                          <button type="button" id="btn-verify-otp" style="padding: 0 32px; height: 42px; font-size: 14px; background: #5a287d; color: white; border-radius: 8px; font-weight: 600; border: none; cursor: pointer;" onclick="verifyLoanOTP()">Verify</button>
                       </div>
                   </div>
                   
@@ -429,18 +429,26 @@
                 <form id="loan-application-form" onsubmit="mockSubmitLoanDetails(event)">
                   <div class="spx-loan-form-grid">
                     <label>Loan Type<select id="loan-type" onchange="updateLoanRate()"><option value="PERSONAL" selected>Personal Loan</option></select></label>
-                    <label>Loan Amount (₹)<input id="loan-amount" type="number" min="10000" step="1000" placeholder="Minimum ₹10,000" onwheel="this.blur()" oninput="calculateLoanPreview()" required></label>
+                    <label>Loan Amount (₹)<input id="loan-amount" type="text" placeholder="Max ₹1,00,00,000" oninput="formatLoanAmount(this)" required></label>
                     <label>Tenure (months)<select id="loan-tenure" onchange="calculateLoanPreview()"><option value="12">12 months</option><option value="24">24 months</option><option value="36">36 months</option><option value="48">48 months</option><option value="60" selected>60 months</option></select></label>
                     <label>Employment Type<select id="loan-employment" required><option value="">Select</option><option>Salaried</option><option>Self Employed</option><option>Business Owner</option><option>Professional</option></select></label>
                     <label>Monthly Income (₹)<input id="loan-income" type="number" min="25000" step="100" placeholder="Min 25000" onwheel="this.blur()" required></label>
-                    <label>Existing EMI (₹)<input id="loan-existing-emi" type="number" min="0" step="100" value="0" placeholder="0" onwheel="this.blur()"></label>
                     <label class="spx-loan-full">Purpose / Reason<textarea id="loan-purpose" rows="3" placeholder="Tell us briefly why you need the loan"></textarea></label>
                   </div>
-                  <div id="loan-calculator-preview" class="spx-loan-preview"><span>Estimated EMI</span><strong>Enter amount to calculate</strong><small>Interest rate starting at 10.99% p.a.</small></div>
+                  <div id="loan-calculator-preview" style="margin-top: 16px;">
+                      <div style="display: flex; flex-direction: column; gap: 8px; padding: 16px; background: #f8fafc; border-radius: 8px;">
+                          <div style="font-size: 13px; color: #64748b;">Estimated Monthly EMI</div>
+                          <strong style="color: #5a287d; font-size: 24px;">Enter amount to calculate</strong>
+                          <div style="font-size: 13px; color: #10b981; font-weight: 500;">Interest rate starting at 12.50% p.a.</div>
+                      </div>
+                  </div>
                   
-                  <div class="step-footer" style="justify-content: space-between;">
-                      <button type="button" class="btn-action btn-outline" onclick="calculateLoanPreview(true)">Calculate EMI</button>
-                      <button type="submit" class="btn-action btn-primary">Continue to Preview</button>
+                  <div class="step-footer" style="display: flex; justify-content: space-between; align-items: center; margin-top: 32px; padding-top: 24px; border-top: 1px solid #f1f5f9;">
+                      <button type="button" class="btn-action btn-outline" id="btn-back-step2" onclick="goToStep(2, '/home/landingPage/loans/personal-loan/doc-upload/')" style="padding: 10px 24px; font-size: 14px;">&larr; Back to Documents</button>
+                      <div style="display: flex; gap: 12px;">
+                          <button type="button" class="btn-action btn-outline" id="btn-calc-emi" onclick="calculateLoanPreview(true)" style="padding: 10px 24px; font-size: 14px;">Calculate EMI</button>
+                          <button type="submit" class="btn-action btn-primary" id="btn-continue-step4" style="padding: 10px 28px; font-size: 14px; font-weight: 600; border-radius: 8px;">Continue to Preview &rarr;</button>
+                      </div>
                   </div>
                 </form>
               </div>
@@ -569,23 +577,67 @@
         updateStepperUI(initialStep);
     });
 
-    // Mock Step 1 Verification
-    function mockSendOTP() {
+    // Real Step 1 Verification
+    async function sendLoanOTP() {
         const btn = document.getElementById('btn-send-otp');
-        btn.textContent = 'OTP Sent';
-        btn.style.background = '#10b981';
-        btn.style.pointerEvents = 'none';
-        document.getElementById('otp-verification-group').style.display = 'block';
+        btn.textContent = 'Sending...';
+        btn.disabled = true;
+
+        try {
+            const r = await fetch('/api/loans/send-otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({})
+            });
+            const d = await r.json();
+            if (d.status === 'success') {
+                btn.textContent = 'OTP Sent';
+                btn.style.background = '#10b981';
+                document.getElementById('otp-verification-group').style.display = 'block';
+            } else {
+                alert(d.message || 'Failed to send OTP.');
+                btn.textContent = 'Send OTP';
+                btn.disabled = false;
+            }
+        } catch (e) {
+            alert('Server error.');
+            btn.textContent = 'Send OTP';
+            btn.disabled = false;
+        }
     }
 
-    function mockVerifyOTP() {
+    async function verifyLoanOTP() {
         const input = document.getElementById('mock-otp-input').value;
-        if (input.length > 3) { // rudimentary check
-            document.getElementById('otp-section').style.display = 'none';
-            document.getElementById('otp-success').style.display = 'block';
-            document.getElementById('btn-step1-continue').disabled = false;
-        } else {
-            alert('Please enter a valid OTP code.');
+        if (input.length < 6) { 
+            alert('Please enter a valid 6-digit OTP code.');
+            return;
+        }
+        
+        const btn = document.getElementById('btn-verify-otp');
+        const oldText = btn.textContent;
+        btn.textContent = 'Verifying...';
+        btn.disabled = true;
+
+        try {
+            const r = await fetch('/api/loans/verify-otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ otp: input })
+            });
+            const d = await r.json();
+            if (d.status === 'success') {
+                document.getElementById('otp-section').style.display = 'none';
+                document.getElementById('otp-success').style.display = 'block';
+                document.getElementById('btn-step1-continue').disabled = false;
+            } else {
+                alert(d.message || 'Invalid OTP.');
+                btn.textContent = oldText;
+                btn.disabled = false;
+            }
+        } catch(e) {
+            alert('Server error.');
+            btn.textContent = oldText;
+            btn.disabled = false;
         }
     }
 

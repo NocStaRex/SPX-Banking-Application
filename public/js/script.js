@@ -1536,14 +1536,46 @@ document.addEventListener('DOMContentLoaded', async () => {
 const SPX_LOAN_RATES = {PERSONAL:12.50, HOME:8.50, EDUCATION:9.00, GOLD:10.50, 'LOAN AGAINST MUTUAL FUND':9.50, 'OVERDRAFT AGAINST DEPOSIT':11.00};
 function moneyINR(n){ return `₹${Number(n||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2})}`; }
 function formatLoanAmount(input) {
-    let rawVal = input.value.replace(/[^0-9]/g, '');
-    let num = parseInt(rawVal, 10) || 0;
-    if (num > 10000000) num = 10000000;
-    input.value = num ? num.toLocaleString('en-IN') : '';
+    const existingError = document.getElementById('loan-amount-error');
+    if (existingError) existingError.remove();
+    
+    let cursorPosition = input.selectionStart;
+    let originalLength = input.value.length;
+    
+    let raw = input.value.replace(/[^0-9]/g, '');
+    if (!raw) {
+        input.value = '';
+        const btn = document.getElementById('btn-continue-step4');
+        if (btn) btn.disabled = false;
+        updateLoanRate();
+        return;
+    }
+    
+    if (raw.length > 8) {
+        raw = raw.slice(0, 8);
+    }
+    
+    let num = parseInt(raw, 10);
+    
+    if (num > 10000000) {
+        raw = raw.slice(0, -1);
+        num = parseInt(raw, 10) || 0;
+    }
+    
+    let formatted = num ? num.toLocaleString('en-IN') : '';
+    input.value = formatted;
+    
+    let lengthDiff = formatted.length - originalLength;
+    let newCursor = cursorPosition + lengthDiff;
+    if (newCursor < 0) newCursor = 0;
+    input.setSelectionRange(newCursor, newCursor);
+    
+    const btn = document.getElementById('btn-continue-step4');
+    if (btn) btn.disabled = false;
     calculateLoanPreview();
 }
-function updateLoanRate(){ const type=document.getElementById('loan-type')?.value; const el=document.getElementById('loan-calculator-preview'); if(el && type){ const r=SPX_LOAN_RATES[type]||12.5; const amt=Number(document.getElementById('loan-amount')?.value.replace(/,/g, '')||0); const tenure=Number(document.getElementById('loan-tenure')?.value||60); if(amt>=10000){ calculateLoanPreview(); } else { el.innerHTML=`<div style="display: flex; flex-direction: column; gap: 8px; padding: 16px; background: #f8fafc; border-radius: 8px;"><div style="font-size: 13px; color: #64748b;">Estimated Monthly EMI</div><strong style="color: #5a287d; font-size: 24px;">Enter amount to calculate</strong><div style="font-size: 13px; color: #10b981; font-weight: 500;">Interest rate starting at ${r.toFixed(2)}% p.a.</div></div>`; } } }
-async function calculateLoanPreview(force=false){ const amount=Number(document.getElementById('loan-amount')?.value.replace(/,/g, '')||0), tenure=Number(document.getElementById('loan-tenure')?.value||60), type=document.getElementById('loan-type')?.value||'PERSONAL', box=document.getElementById('loan-calculator-preview'); if(!box)return; if(amount<10000){updateLoanRate();return;} try{const r=await fetch('/api/loans/calculate',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({loan_type:type,amount,tenure_months:tenure})});const d=await r.json();if(!d.success){box.innerHTML=`<span style="color:red">Estimate Error</span><strong>${d.message}</strong>`;return;}box.innerHTML=`<div style="display: flex; flex-direction: column; gap: 12px; padding: 20px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+function updateLoanRate(){ const type=document.getElementById('loan-type')?.value; const el=document.getElementById('loan-calculator-preview'); if(el && type){ const r=SPX_LOAN_RATES[type]||12.5; const amt=Number(document.getElementById('loan-amount')?.value.replace(/,/g, '')||0); const tenure=Number(document.getElementById('loan-tenure')?.value||60); if(amt>=10000 && amt<=10000000){ calculateLoanPreview(); } else { el.innerHTML=`<div style="display: flex; flex-direction: column; gap: 8px; padding: 16px; background: #f8fafc; border-radius: 8px;"><div style="font-size: 13px; color: #64748b;">Estimated Monthly EMI</div><strong style="color: #5a287d; font-size: 24px;">Enter amount to calculate</strong><div style="font-size: 13px; color: #10b981; font-weight: 500;">Interest rate starting at ${r.toFixed(2)}% p.a.</div></div>`; } } }
+async function calculateLoanPreview(force=false){ const amount=Number(document.getElementById('loan-amount')?.value.replace(/,/g, '')||0), tenure=Number(document.getElementById('loan-tenure')?.value||60), type=document.getElementById('loan-type')?.value||'PERSONAL', box=document.getElementById('loan-calculator-preview'); if(!box)return; if(amount<10000 || amount>10000000){updateLoanRate();return;} try{const r=await fetch('/api/loans/calculate',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({loan_type:type,amount,tenure_months:tenure})});const d=await r.json();if(!d.success){box.innerHTML=`<span style="color:red">Estimate Error</span><strong>${d.message}</strong>`;return;}box.innerHTML=`<div style="display: flex; flex-direction: column; gap: 12px; padding: 20px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
     <div>
         <div style="font-size: 13px; color: #64748b; margin-bottom: 4px;">Estimated Monthly EMI</div>
         <strong style="color: #5a287d; font-size: 24px; display: block;">${moneyINR(d.emi)} / month</strong>

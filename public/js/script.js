@@ -9,6 +9,7 @@ let currentUser = null;
 let currentOtpCode = '';
 let pendingOtpAction = null; // 'LOGIN', 'REGISTER', 'RESET_PASSWORD'
 let pendingPayload = null;
+let pendingOtpEmail = null;
 let otpTimerInterval = null;
 let otpExpiryTimestamp = 0;
 let viewHistory = ['login']; // Navigation history stack for Back button
@@ -503,11 +504,35 @@ async function handleNewPasswordSubmit(e) {
    6. REAL GMAIL OTP DISPATCH ENGINE
    ========================================================================== */
 
+function maskEmail(email) {
+    if (!email || typeof email !== 'string' || !email.includes('@')) {
+        return email || '';
+    }
+
+    const [username, domain] = email.split('@');
+    let maskedUser = '';
+
+    if (username.length <= 2) {
+        maskedUser = username[0] + '*';
+    } else if (username.length === 3) {
+        maskedUser = username[0] + '*' + username[2];
+    } else {
+        maskedUser = username.slice(0, 3) + '******';
+    }
+
+    return `${maskedUser}@${domain}`;
+}
+
 async function triggerOtpFlow(action, email, payload) {
     pendingOtpAction = action;
     pendingPayload = payload;
+    pendingOtpEmail = email;
     
-    document.getElementById('otp-target-display').textContent = email;
+    if (action === 'LOGIN' || action === 'RESET_PASSWORD') {
+        document.getElementById('otp-target-display').textContent = maskEmail(email);
+    } else {
+        document.getElementById('otp-target-display').textContent = email;
+    }
 
     const boxes = document.querySelectorAll('.otp-box');
     boxes.forEach(box => box.value = '');
@@ -560,6 +585,7 @@ function closeOtpModal() {
     if (typeof otpExpiryTimestamp !== 'undefined') {
         otpExpiryTimestamp = 0;
     }
+    pendingOtpEmail = null;
 
     // 3. Clear all OTP input fields
     document.querySelectorAll('.otp-box, .otp-digit-input, #otp-input').forEach(input => {
@@ -648,7 +674,7 @@ document.addEventListener('visibilitychange', () => {
 });
 
 async function resendOtpCode() {
-    const targetEmail = document.getElementById('otp-target-display').textContent;
+    const targetEmail = pendingOtpEmail || document.getElementById('otp-target-display').textContent;
     startOtpTimer();
     const boxes = document.querySelectorAll('.otp-box');
     boxes.forEach(box => box.value = '');
@@ -705,7 +731,7 @@ async function submitOtpVerification() {
     const btn = document.getElementById('btn-verify-otp');
     setButtonLoading(btn, true);
     
-    const targetEmail = document.getElementById('otp-target-display').textContent;
+    const targetEmail = pendingOtpEmail || document.getElementById('otp-target-display').textContent;
 
     try {
         const response = await fetch('/api/verify-otp', {

@@ -579,6 +579,11 @@ def accounts():
         return redirect('/registration/welcome')
     return render_template('accounts.html', user=user, user_initials=user['initials'], account_number=user['account_number'], balance=user['balance'])
 
+@app.route('/home/landingPage/statement')
+@login_required
+def statement_redirect():
+    return redirect('/home/landingPage/manageRelationship/transactionAccounts')
+
 @app.route('/home/landingPage/profilePage/services/manageProfile/personalDetails')
 @login_required
 def profile_page():

@@ -1574,6 +1574,29 @@ function formatLoanAmount(input) {
     if (btn) btn.disabled = false;
     calculateLoanPreview();
 }
+function formatMonthlyIncome(input) {
+    let cursorPosition = input.selectionStart;
+    let originalLength = input.value.length;
+    
+    let raw = input.value.replace(/[^0-9]/g, '');
+    if (!raw) {
+        input.value = '';
+        return;
+    }
+    
+    if (raw.length > 8) {
+        raw = raw.slice(0, 8);
+    }
+    
+    let num = parseInt(raw, 10);
+    let formatted = num ? num.toLocaleString('en-IN') : '';
+    input.value = formatted;
+    
+    let lengthDiff = formatted.length - originalLength;
+    let newCursor = cursorPosition + lengthDiff;
+    if (newCursor < 0) newCursor = 0;
+    input.setSelectionRange(newCursor, newCursor);
+}
 function updateLoanRate(){ const type=document.getElementById('loan-type')?.value; const el=document.getElementById('loan-calculator-preview'); if(el && type){ const r=SPX_LOAN_RATES[type]||12.5; const amt=Number(document.getElementById('loan-amount')?.value.replace(/,/g, '')||0); const tenure=Number(document.getElementById('loan-tenure')?.value||60); if(amt>=10000 && amt<=10000000){ calculateLoanPreview(); } else { el.innerHTML=`<div style="display: flex; flex-direction: column; gap: 8px; padding: 16px; background: #f8fafc; border-radius: 8px;"><div style="font-size: 13px; color: #64748b;">Estimated Monthly EMI</div><strong style="color: #5a287d; font-size: 24px;">Enter amount to calculate</strong><div style="font-size: 13px; color: #10b981; font-weight: 500;">Interest rate starting at ${r.toFixed(2)}% p.a.</div></div>`; } } }
 let loanPreviewDebounceTimer = null;
 async function calculateLoanPreview(force=false){ 
@@ -1610,7 +1633,7 @@ async function calculateLoanPreview(force=false){
     else loanPreviewDebounceTimer = setTimeout(doFetch, 350);
 }
 let pendingLoanApplication=null;
-function getLoanFormData(){return {loan_type:document.getElementById('loan-type')?.value,amount:Number(document.getElementById('loan-amount')?.value.replace(/,/g, '')||0),tenure_months:Number(document.getElementById('loan-tenure')?.value||0),employment_type:document.getElementById('loan-employment')?.value,monthly_income:Number(document.getElementById('loan-income')?.value||0),existing_emi:Number(document.getElementById('loan-existing-emi')?.value||0),purpose:document.getElementById('loan-purpose')?.value.trim()||''};}
+function getLoanFormData(){return {loan_type:document.getElementById('loan-type')?.value,amount:Number(document.getElementById('loan-amount')?.value.replace(/,/g, '')||0),tenure_months:Number(document.getElementById('loan-tenure')?.value||0),employment_type:document.getElementById('loan-employment')?.value,monthly_income:Number(document.getElementById('loan-income')?.value.replace(/,/g, '')||0),existing_emi:Number(document.getElementById('loan-existing-emi')?.value||0),purpose:document.getElementById('loan-purpose')?.value.trim()||''};}
 async function submitLoanApplication(e){e.preventDefault();const data=getLoanFormData();if(data.amount<10000){showToast('Loan amount must be at least ₹10,000.','error');return;}if(!data.employment_type||data.monthly_income<=0){showToast('Please complete employment type and monthly income.','error');return;}const r=await fetch('/api/loans/calculate',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});const d=await r.json();if(!d.success){showToast(d.message||'Unable to calculate loan.','error');return;}pendingLoanApplication={...data,rate:d.interest_rate,emi:d.emi,totalInterest:d.total_interest,totalPayable:d.total_payable};document.getElementById('loan-review-content').innerHTML=`<div class="spx-loan-review-grid"><div class="spx-loan-review-item"><span>Loan Type</span><strong>${data.loan_type.replaceAll('_',' ')}</strong></div><div class="spx-loan-review-item"><span>Amount</span><strong>${moneyINR(data.amount)}</strong></div><div class="spx-loan-review-item"><span>Interest Rate</span><strong>${d.interest_rate.toFixed(2)}% p.a.</strong></div><div class="spx-loan-review-item"><span>Tenure</span><strong>${data.tenure_months} months</strong></div><div class="spx-loan-review-item"><span>Estimated EMI</span><strong>${moneyINR(d.emi)} / month</strong></div><div class="spx-loan-review-item"><span>Monthly Income</span><strong>${moneyINR(data.monthly_income)}</strong></div><div class="spx-loan-review-item"><span>Employment</span><strong>${data.employment_type}</strong></div><div class="spx-loan-review-item"><span>Purpose</span><strong>${data.purpose||'Not specified'}</strong></div></div>`;document.getElementById('loan-review-panel').style.display='block';document.getElementById('loan-review-panel').scrollIntoView({behavior:'smooth',block:'start'});}
 function closeLoanReview(){pendingLoanApplication=null;const p=document.getElementById('loan-review-panel');if(p)p.style.display='none';}
 async function confirmLoanApplication(){if(!pendingLoanApplication)return;const r=await fetch('/api/loans/apply',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify(pendingLoanApplication)});const d=await r.json();if(!d.success){showToast(d.message||'Loan application failed.','error');return;}showToast(`Loan application #LN-${d.loan_id} submitted successfully.`,'success');closeLoanReview();document.getElementById('loan-application-form')?.reset();updateLoanRate();loadMyLoans();}

@@ -1368,8 +1368,10 @@ def customer_apply_loan():
         amount_str = str(data.get('amount', 0) or 0).replace(',', '')
         amount = Decimal(amount_str)
         tenure = int(data.get('tenure_months', 0) or 0)
-        monthly_income = Decimal(str(data.get('monthly_income', 0) or 0))
-        existing_emi = Decimal(str(data.get('existing_emi', 0) or 0))
+        monthly_income_str = str(data.get('monthly_income', 0) or 0).replace(',', '')
+        monthly_income = Decimal(monthly_income_str)
+        existing_emi_str = str(data.get('existing_emi', 0) or 0).replace(',', '')
+        existing_emi = Decimal(existing_emi_str)
     except Exception:
         return jsonify({'success': False, 'message': 'Enter valid numeric loan details.'}), 400
     purpose = str(data.get('purpose','')).strip()

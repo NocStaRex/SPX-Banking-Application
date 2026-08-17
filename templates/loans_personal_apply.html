@@ -432,7 +432,7 @@
                     <label>Loan Amount (₹)<input id="loan-amount" type="text" placeholder="Max ₹1,00,00,000" oninput="formatLoanAmount(this)" required></label>
                     <label>Tenure (months)<select id="loan-tenure" onchange="calculateLoanPreview()"><option value="12">12 months</option><option value="24">24 months</option><option value="36">36 months</option><option value="48">48 months</option><option value="60" selected>60 months</option></select></label>
                     <label>Employment Type<select id="loan-employment" required><option value="">Select</option><option>Salaried</option><option>Self Employed</option><option>Business Owner</option><option>Professional</option></select></label>
-                    <label>Monthly Income (₹)<input id="loan-income" type="number" min="25000" step="100" placeholder="Min 25000" onwheel="this.blur()" required></label>
+                    <label>Monthly Income (₹)<input id="loan-income" type="text" placeholder="Enter Monthly Income" oninput="formatMonthlyIncome(this)" required></label>
                     <label class="spx-loan-full">Purpose / Reason<textarea id="loan-purpose" rows="3" placeholder="Tell us briefly why you need the loan"></textarea></label>
                   </div>
                   <div id="loan-calculator-preview" style="margin-top: 16px;">

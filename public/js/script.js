@@ -811,7 +811,11 @@ function completeLogin(user) {
     document.getElementById('dash-user-name').textContent = user.name;
     document.getElementById('dash-acc-num').textContent = `ACC: ${user.accountNumber}`;
     document.getElementById('dash-acc-type').textContent = user.accountType || 'Premier Vault Account';
-    document.getElementById('dash-balance').textContent = user.balance || '0.00';
+    const db1 = document.getElementById('dash-balance');
+    if (db1) {
+        db1.setAttribute('data-actual-balance', user.balance || '0.00');
+        if (db1.getAttribute('data-hidden') === 'false') db1.textContent = user.balance || '0.00';
+    }
     
     const initials = user.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
     document.getElementById('dash-avatar').textContent = initials || 'JD';
@@ -841,7 +845,10 @@ function checkExistingSession() {
             if (nameEl) nameEl.textContent = user.name;
             if (accEl)  accEl.textContent  = `ACC: ${user.accountNumber}`;
             if (typeEl) typeEl.textContent  = user.accountType || 'Premier Vault Account';
-            if (balEl)  balEl.textContent   = user.balance || '0.00';
+            if (balEl) {
+                balEl.setAttribute('data-actual-balance', user.balance || '0.00');
+                if (balEl.getAttribute('data-hidden') === 'false') balEl.textContent = user.balance || '0.00';
+            }
             if (avEl) {
                 const initials = user.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
                 avEl.textContent = initials || 'JD';
@@ -905,16 +912,14 @@ function toggleBalanceVisibility() {
     const isHidden = balanceEl.getAttribute('data-hidden') === 'true';
     if (isHidden) {
         // Show balance
-        balanceEl.textContent = currentUser ? currentUser.balance : '0.00';
+        balanceEl.textContent = currentUser ? currentUser.balance : (balanceEl.getAttribute('data-actual-balance') || '0.00');
         balanceEl.setAttribute('data-hidden', 'false');
         eyeIcon.innerHTML = `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
-        showToast('Balance shown', 'info');
     } else {
         // Hide balance
         balanceEl.textContent = 'XXXX.XX';
         balanceEl.setAttribute('data-hidden', 'true');
         eyeIcon.innerHTML = `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
-        showToast('Balance hidden', 'info');
     }
 }
 
@@ -1374,7 +1379,13 @@ function populateBankHeaderUser(user) {
     if (avatar) avatar.textContent = (user.name || 'SPX').split(' ').map(x => x[0]).join('').substring(0,2).toUpperCase();
     const dashName = document.getElementById('dash-user-name'); if (dashName) dashName.textContent = user.name || '';
     const dashAcc = document.getElementById('dash-acc-num'); if (dashAcc) dashAcc.textContent = `ACC: ${user.accountNumber || ''}`;
-    const dashBalance = document.getElementById('dash-balance'); if (dashBalance) dashBalance.textContent = user.balance || '0.00';
+    const dashBalance = document.getElementById('dash-balance');
+    if (dashBalance) {
+        dashBalance.setAttribute('data-actual-balance', user.balance || '0.00');
+        if (dashBalance.getAttribute('data-hidden') === 'false') {
+            dashBalance.textContent = user.balance || '0.00';
+        }
+    }
     const last = document.getElementById('last-login-time'); if (last) last.textContent = user.lastLogin ? `Last Login • ${user.lastLogin}` : 'Last Login • First login';
 }
 

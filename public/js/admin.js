@@ -382,40 +382,197 @@ async function loadLoansTable() {
     const data = await adminFetch('/api/admin/loans');
     if (!data || !data.success) return;
     
-    const tableBody = document.getElementById('loans-table-body');
-    if (!tableBody) return;
+    const container = document.getElementById('loans-list-container');
+    if (!container) return;
     
     if (data.loans.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 30px; color: var(--admin-text-muted);">No loan applications in system.</td></tr>`;
+        container.innerHTML = `<div style="text-align: center; padding: 30px; color: var(--admin-text-muted);">No loan applications in system.</div>`;
         return;
     }
     
-    tableBody.innerHTML = data.loans.map(loan => `
-        <tr>
-            <td><strong style="font-family: var(--font-mono);">#LN-${loan.id}</strong></td>
-            <td>
-                <div style="font-weight: 700;">${loan.first_name} ${loan.last_name}</div>
-                <div style="font-size: 11px; color: var(--admin-text-muted);">${loan.account_number}</div>
-            </td>
-            <td><strong>${loan.loan_type}</strong></td>
-            <td><strong style="color: #6d1c7f;">₹${loan.amount.toLocaleString('en-IN', {minimumFractionDigits: 2})}</strong></td>
-            <td>${loan.interest_rate}% (${loan.tenure_months} mos)</td>
-            <td><span class="status-badge ${loan.status.toLowerCase()}">${loan.status}</span></td>
-            <td>
-                ${loan.status === 'PENDING' ? `
-                    <button onclick="handleLoanAction(${loan.id}, 'APPROVE')" class="btn-action-small btn-action-success">Approve</button>
-                    <button onclick="handleLoanAction(${loan.id}, 'REJECT')" class="btn-action-small btn-action-danger">Reject</button>
-                ` : loan.status === 'APPROVED' ? `
-                    <button onclick="handleLoanAction(${loan.id}, 'DISBURSE')" class="btn-action-small btn-action-success">Disburse</button>
-                    <button onclick="handleLoanAction(${loan.id}, 'REJECT')" class="btn-action-small btn-action-danger">Reject</button>
-                ` : loan.status === 'ACTIVE' ? `
-                    <button onclick="handleLoanAction(${loan.id}, 'CLOSE')" class="btn-action-small btn-action-danger">Close</button>
-                ` : `
-                    <span style="font-size: 11px; color: var(--admin-text-muted);">${loan.disbursed_at || loan.approved_at || loan.status}</span>
-                `}
-            </td>
-        </tr>
-    `).join('');
+    container.innerHTML = data.loans.map(loan => {
+        let statusBadgeClass = loan.status === 'APPROVED' ? 'bg-success' : loan.status === 'REJECTED' ? 'bg-danger' : 'bg-warning text-dark';
+        
+        let actionButtons = '';
+        if (loan.status === 'PENDING') {
+            actionButtons = `
+                <button onclick="handleLoanAction(${loan.id}, 'APPROVE')" class="btn btn-sm btn-success px-3 fw-medium">Approve</button>
+                <button onclick="handleLoanAction(${loan.id}, 'REJECT')" class="btn btn-sm btn-danger px-3 fw-medium">Reject</button>
+            `;
+        } else if (loan.status === 'APPROVED') {
+            actionButtons = `
+                <button onclick="handleLoanAction(${loan.id}, 'DISBURSE')" class="btn btn-sm btn-success px-3 fw-medium">Disburse</button>
+                <button onclick="handleLoanAction(${loan.id}, 'REJECT')" class="btn btn-sm btn-danger px-3 fw-medium">Reject</button>
+            `;
+        } else if (loan.status === 'ACTIVE') {
+            actionButtons = `
+                <button onclick="handleLoanAction(${loan.id}, 'CLOSE')" class="btn btn-sm btn-danger px-3 fw-medium">Close</button>
+            `;
+        } else {
+            actionButtons = `<span style="font-size: 11px; color: var(--admin-text-muted);">${loan.disbursed_at || loan.approved_at || loan.status}</span>`;
+        }
+
+        return `
+    <div class="card border rounded-3 shadow-sm bg-white overflow-hidden loan-admin-card mb-3" id="loan-card-${loan.id}">
+       <!-- Card Header / Summary Row (Clickable) -->
+       <div class="card-body p-3 p-md-4 loan-header-trigger" style="cursor: pointer;" data-target="drawer-${loan.id}">
+         <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+           
+           <!-- Left: Application Details & User Info -->
+           <div>
+             <div class="d-flex align-items-center gap-2 mb-1">
+               <span class="fw-bold text-dark fs-6">${loan.reference_id || 'SPXPL-'+loan.id}</span>
+               <span class="badge bg-light text-secondary border">PERSONAL</span>
+             </div>
+             <div class="text-muted small">
+               <span class="fw-semibold text-dark">${loan.first_name} ${loan.last_name}</span> 
+               <span class="mx-1">•</span> 
+               <span>Acc: ${loan.account_number}</span>
+               <span class="mx-1">•</span> 
+               <span>Applied: ${loan.created_at || loan.applied_at}</span>
+             </div>
+           </div>
+
+           <!-- Center: Requested Amount & Interest Badge -->
+           <div class="d-flex align-items-center gap-4">
+             <div>
+               <div class="text-muted small text-uppercase" style="font-size: 11px;">Requested Amount</div>
+               <div class="fw-bold text-dark fs-5">₹${(loan.amount).toLocaleString('en-IN', {minimumFractionDigits: 2})}</div>
+             </div>
+             <div>
+               <div class="text-muted small text-uppercase" style="font-size: 11px;">Tenure & Rate</div>
+               <div class="fw-semibold text-secondary">${loan.interest_rate || 12.5}% (${loan.tenure_months || 12} mos)</div>
+             </div>
+           </div>
+
+           <!-- Right: Status Badge, Action Buttons & Chevron -->
+           <div class="d-flex align-items-center gap-2">
+             <span class="badge ${statusBadgeClass} px-3 py-2 text-uppercase">
+               ${loan.status}
+             </span>
+
+             ${actionButtons}
+
+             <!-- Dropdown Accordion Chevron Icon -->
+             <button class="btn btn-link text-muted p-1 ms-1 chevron-btn" type="button">
+               <i class="fas fa-chevron-down transition-icon fs-6"></i>
+             </button>
+           </div>
+
+         </div>
+       </div>
+
+       <!-- Collapsible Drawer (Hidden by Default) -->
+       <div class="loan-details-drawer border-top bg-light p-3 p-md-4 d-none" id="drawer-${loan.id}">
+         <div class="row g-4">
+           
+           <!-- Financial Info Chips -->
+           <div class="col-lg-6">
+             <h6 class="fw-bold text-dark mb-3"><i class="fas fa-info-circle text-primary me-2"></i>Application Breakdown</h6>
+             
+             <div class="row g-2 mb-3">
+               <div class="col-6 col-sm-3">
+                 <div class="p-2 bg-white rounded border text-center">
+                   <div class="text-muted" style="font-size: 11px;">EMI</div>
+                   <div class="fw-bold text-dark small">₹${(loan.calculated_emi || loan.emi || 0).toLocaleString('en-IN', {minimumFractionDigits: 2})}</div>
+                 </div>
+               </div>
+               <div class="col-6 col-sm-3">
+                 <div class="p-2 bg-white rounded border text-center">
+                   <div class="text-muted" style="font-size: 11px;">Tenure</div>
+                   <div class="fw-bold text-dark small">${loan.tenure_months || 12} Months</div>
+                 </div>
+               </div>
+               <div class="col-6 col-sm-3">
+                 <div class="p-2 bg-white rounded border text-center">
+                   <div class="text-muted" style="font-size: 11px;">Employment</div>
+                   <div class="fw-bold text-dark small">${loan.employment_type || 'Salaried'}</div>
+                 </div>
+               </div>
+               <div class="col-6 col-sm-3">
+                 <div class="p-2 bg-white rounded border text-center">
+                   <div class="text-muted" style="font-size: 11px;">Income</div>
+                   <div class="fw-bold text-dark small">₹${(loan.monthly_income || 0).toLocaleString('en-IN', {minimumFractionDigits: 2})}</div>
+                 </div>
+               </div>
+             </div>
+
+             <div class="p-3 bg-white rounded border">
+               <span class="text-muted small d-block mb-1 font-monospace">PURPOSE / REASON</span>
+               <p class="mb-0 text-dark small fw-medium">${loan.purpose || 'Personal Expenses'}</p>
+             </div>
+           </div>
+
+           <!-- Uploaded Verification Documents (3 Separate Slots) -->
+           <div class="col-lg-6">
+             <h6 class="fw-bold text-dark mb-3"><i class="fas fa-folder-open text-primary me-2"></i>Verification Documents</h6>
+             <div class="d-flex flex-column gap-2">
+               
+               <div class="p-2 bg-white border rounded d-flex align-items-center justify-content-between">
+                 <div class="d-flex align-items-center">
+                   <i class="fas fa-user-circle text-primary fs-5 me-2"></i>
+                   <div>
+                     <div class="fw-semibold small text-dark">Applicant Photo</div>
+                     <div class="text-muted" style="font-size: 11px;">Passport Size Photo</div>
+                   </div>
+                 </div>
+                 <a href="/static/uploads/${loan.photo_doc || loan.user_photo || 'default_photo.jpg'}" target="_blank" class="btn btn-sm btn-outline-primary py-1 px-3">
+                   <i class="fas fa-external-link-alt me-1"></i> View Photo
+                 </a>
+               </div>
+
+               <div class="p-2 bg-white border rounded d-flex align-items-center justify-content-between">
+                 <div class="d-flex align-items-center">
+                   <i class="fas fa-id-card text-success fs-5 me-2"></i>
+                   <div>
+                     <div class="fw-semibold small text-dark">Aadhaar Card</div>
+                     <div class="text-muted" style="font-size: 11px;">Government ID Proof</div>
+                   </div>
+                 </div>
+                 <a href="/static/uploads/${loan.aadhaar_doc || loan.aadhaar_file || 'sample_aadhaar.pdf'}" target="_blank" class="btn btn-sm btn-outline-primary py-1 px-3">
+                   <i class="fas fa-external-link-alt me-1"></i> View Aadhaar
+                 </a>
+               </div>
+
+               <div class="p-2 bg-white border rounded d-flex align-items-center justify-content-between">
+                 <div class="d-flex align-items-center">
+                   <i class="fas fa-file-invoice text-warning fs-5 me-2"></i>
+                   <div>
+                     <div class="fw-semibold small text-dark">PAN Card</div>
+                     <div class="text-muted" style="font-size: 11px;">Tax & Identification Proof</div>
+                   </div>
+                 </div>
+                 <a href="/static/uploads/${loan.pan_doc || loan.pan_file || 'sample_pan.pdf'}" target="_blank" class="btn btn-sm btn-outline-primary py-1 px-3">
+                   <i class="fas fa-external-link-alt me-1"></i> View PAN
+                 </a>
+               </div>
+
+             </div>
+           </div>
+
+         </div>
+       </div>
+
+    </div>`;
+    }).join('');
+
+    // Attach click listeners for expandable rows
+    document.querySelectorAll('.loan-header-trigger').forEach(row => {
+        row.addEventListener('click', function(e) {
+            if (e.target.closest('button') || e.target.closest('a') || e.target.closest('form')) return;
+            const targetDrawer = document.getElementById(this.dataset.target);
+            const chevron = this.querySelector('.fa-chevron-down');
+            if (targetDrawer) {
+                if (targetDrawer.classList.contains('d-none')) {
+                    targetDrawer.classList.remove('d-none');
+                    if (chevron) chevron.style.transform = 'rotate(180deg)';
+                } else {
+                    targetDrawer.classList.add('d-none');
+                    if (chevron) chevron.style.transform = 'rotate(0deg)';
+                }
+            }
+        });
+    });
 }
 
 async function handleLoanAction(loanId, action) {

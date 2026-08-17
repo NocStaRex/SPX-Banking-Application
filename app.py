@@ -596,13 +596,13 @@ def send_money_page():
     return render_template('payments/send_money.html', user=user, user_initials=user['initials'], account_number=user['account_number'], balance=user['balance'])
 # -------------------
 
-@app.route('/home/landingPage/loans')
+@app.route('/home/landingPage/loans/manage', methods=['GET'])
 @login_required
-def customer_loans_page():
+def loans_manage():
     user = get_customer_context(flask_session['user_id'])
     if not user or user['account_status'] != 'ACTIVE':
         return redirect('/registration/welcome')
-    return render_template('loans.html', user=user, user_initials=user['initials'], account_number=user['account_number'], balance=user['balance'])
+    return render_template('loans_manage.html', user=user, user_initials=user['initials'], account_number=user['account_number'], balance=user['balance'])
 # -------------------
 
 @app.route('/home/landingPage/loans/personal-loan/')

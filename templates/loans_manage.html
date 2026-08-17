@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPX BANK - Loans</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='assets/favicon/favicon.png') }}">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<div id="toast-container" class="toast-container"></div>
+<div class="portal-wrapper">
+    {% include 'components/header.html' %}
+    <main class="spx-portal-body">
+      <div class="spx-loan-page">
+        <div class="spx-loan-breadcrumb"><a href="/home/landingPage/homePage">Home</a><span>›</span><a href="/home/landingPage/manageRelationship/transactionAccounts">Relationship Overview</a><span>›</span><strong>Loans</strong></div>
+        <div class="spx-loan-hero"><div><div class="spx-loan-kicker">LOAN SERVICES</div><h1>Manage Loans &amp; Repayments</h1><p>Track your active applications, loan approvals, EMI schedules, and manage monthly repayments.</p></div><div class="spx-loan-hero-account"><span>Account</span><strong>{{ account_number }}</strong><small>Available Balance ₹{{ balance }}</small></div></div>
+
+        <section class="spx-loan-card" style="margin-top:22px"><div class="spx-loan-card-heading"><div><h2>My Loans</h2><p>Track your applications, approved loans, outstanding principal and repayments.</p></div><button class="spx-loan-secondary" onclick="loadMyLoans()">Refresh</button></div><div id="my-loans-container"><div class="spx-loan-empty">Loading your loan records...</div></div></section>
+
+        <section class="spx-loan-card" style="margin-top:22px"><div class="spx-loan-card-heading"><div><h2>Loan Repayment</h2><p>Select an active loan and make a repayment from your SPX Bank balance.</p></div></div><div id="loan-payment-container"><div class="spx-loan-empty">Your repayment controls will appear when you have an active loan.</div></div></section>
+      </div>
+    </main>
+</div>
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+<script>document.addEventListener('DOMContentLoaded',()=>{ loadMyLoans(); updateLoanRate(); });</script>
+</body>
+</html>

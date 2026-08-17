@@ -607,6 +607,11 @@ def personal_loan_landing_page():
     return render_template('loans_personal.html', user=user, user_initials=user['initials'], account_number=user['account_number'], balance=user['balance'])
 
 @app.route('/home/landingPage/loans/personal-loan/apply/')
+@app.route('/home/landingPage/loans/personal-loan/basicinfo/email-verify/')
+@app.route('/home/landingPage/loans/personal-loan/doc-upload/')
+@app.route('/home/landingPage/loans/personal-loan/apply-loan-application/')
+@app.route('/home/landingPage/loans/personal-loan/preview-loan-application/')
+@app.route('/home/landingPage/loans/personal-loan/application-submit-status/')
 @login_required
 def personal_loan_apply_page():
     user = get_customer_context(flask_session['user_id'])

@@ -1637,6 +1637,62 @@ function getLoanFormData(){return {loan_type:document.getElementById('loan-type'
 async function submitLoanApplication(e){e.preventDefault();const data=getLoanFormData();if(data.amount<10000){showToast('Loan amount must be at least ₹10,000.','error');return;}if(!data.employment_type||data.monthly_income<=0){showToast('Please complete employment type and monthly income.','error');return;}const r=await fetch('/api/loans/calculate',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});const d=await r.json();if(!d.success){showToast(d.message||'Unable to calculate loan.','error');return;}pendingLoanApplication={...data,rate:d.interest_rate,emi:d.emi,totalInterest:d.total_interest,totalPayable:d.total_payable};document.getElementById('loan-review-content').innerHTML=`<div class="spx-loan-review-grid"><div class="spx-loan-review-item"><span>Loan Type</span><strong>${data.loan_type.replaceAll('_',' ')}</strong></div><div class="spx-loan-review-item"><span>Amount</span><strong>${moneyINR(data.amount)}</strong></div><div class="spx-loan-review-item"><span>Interest Rate</span><strong>${d.interest_rate.toFixed(2)}% p.a.</strong></div><div class="spx-loan-review-item"><span>Tenure</span><strong>${data.tenure_months} months</strong></div><div class="spx-loan-review-item"><span>Estimated EMI</span><strong>${moneyINR(d.emi)} / month</strong></div><div class="spx-loan-review-item"><span>Monthly Income</span><strong>${moneyINR(data.monthly_income)}</strong></div><div class="spx-loan-review-item"><span>Employment</span><strong>${data.employment_type}</strong></div><div class="spx-loan-review-item"><span>Purpose</span><strong>${data.purpose||'Not specified'}</strong></div></div>`;document.getElementById('loan-review-panel').style.display='block';document.getElementById('loan-review-panel').scrollIntoView({behavior:'smooth',block:'start'});}
 function closeLoanReview(){pendingLoanApplication=null;const p=document.getElementById('loan-review-panel');if(p)p.style.display='none';}
 async function confirmLoanApplication(){if(!pendingLoanApplication)return;const r=await fetch('/api/loans/apply',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify(pendingLoanApplication)});const d=await r.json();if(!d.success){showToast(d.message||'Loan application failed.','error');return;}showToast(`Loan application ${d.reference_id} submitted successfully.`,'success');closeLoanReview();document.getElementById('loan-application-form')?.reset();updateLoanRate();loadMyLoans();}
-async function loadMyLoans(){const box=document.getElementById('my-loans-container');if(!box)return;try{const r=await fetch('/api/loans',{credentials:'include'}),d=await r.json();if(!d.success)throw new Error(d.message);if(!d.loans.length){box.innerHTML='<div class="spx-loan-empty">You have no loan applications yet.</div>';document.getElementById('loan-payment-container').innerHTML='<div class="spx-loan-empty">Your repayment controls will appear when you have an active loan.</div>';return;}box.innerHTML=d.loans.map(l=>{const refDisplay = l.reference_id ? l.reference_id : `#LN-${l.id}`; return `<div class="spx-loan-record"><div class="spx-loan-record-top"><div><h3>${refDisplay} · ${l.loan_type}</h3><small>Applied ${l.applied_at||'-'}</small></div><span class="spx-loan-status ${String(l.status).toLowerCase()}">${l.status}</span></div><div class="spx-loan-metrics"><div class="spx-loan-metric"><span>Amount</span><strong>${moneyINR(l.amount)}</strong></div><div class="spx-loan-metric"><span>Interest</span><strong>${Number(l.interest_rate||0).toFixed(2)}%</strong></div><div class="spx-loan-metric"><span>EMI</span><strong>${moneyINR(l.emi)}</strong></div><div class="spx-loan-metric"><span>Outstanding</span><strong>${moneyINR(l.outstanding_principal)}</strong></div></div>${l.admin_notes?`<div style="margin-top:12px;font-size:11px;color:#666"><b>Admin note:</b> ${l.admin_notes}</div>`:''}</div>`;}).join('');const active=d.loans.filter(l=>l.status==='ACTIVE');const pay=document.getElementById('loan-payment-container');if(!active.length){pay.innerHTML='<div class="spx-loan-empty">No active loan is currently available for repayment.</div>';return;}pay.innerHTML=`<div class="spx-loan-payment-box"><label>Loan<select id="repay-loan-select">${active.map(l=>{const refDisplay = l.reference_id ? l.reference_id : `#LN-${l.id}`; return `<option value="${l.id}">${refDisplay} · ${l.loan_type} · Outstanding ${moneyINR(l.outstanding_principal)}</option>`;}).join('')}</select></label><label>Payment Amount (₹)<input id="repay-amount" type="number" min="1" step="100" placeholder="Enter amount"></label><button class="spx-loan-primary" onclick="paySelectedLoan()">Pay Loan</button></div><div id="loan-payment-history" style="margin-top:15px"></div>`;loadLoanPaymentHistory(active[0].id);}catch(e){box.innerHTML='<div class="spx-loan-empty">Unable to load loan records.</div>';}}
+async function loadMyLoans(){const box=document.getElementById('my-loans-container');if(!box)return;try{const r=await fetch('/api/loans',{credentials:'include'}),d=await r.json();if(!d.success)throw new Error(d.message);if(!d.loans.length){box.innerHTML='<div class="spx-loan-empty">You have no loan applications yet.</div>';document.getElementById('loan-payment-container').innerHTML='<div class="spx-loan-empty">Your repayment controls will appear when you have an active loan.</div>';return;}box.innerHTML=d.loans.map(l=>{
+    const refDisplay = l.reference_id ? l.reference_id : `#LN-${l.id}`;
+    const empType = l.employment_type || 'Salaried';
+    const monthlyInc = l.monthly_income || 0;
+    const purpose = l.purpose || 'No specific reason provided.';
+    return `
+    <div class="spx-loan-record loan-card-item" data-loan-id="${l.id}" style="cursor: pointer; transition: box-shadow 0.2s ease;">
+      <div class="loan-card-summary">
+        <div class="spx-loan-record-top" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <div>
+            <h3>${refDisplay} · ${l.loan_type}</h3>
+            <small>Applied ${l.applied_at || '-'}</small>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span class="spx-loan-status ${String(l.status).toLowerCase()}">${l.status}</span>
+            <svg class="chevron-icon" style="transition: transform 0.25s ease;" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </div>
+        </div>
+
+        <div class="spx-loan-metrics" style="display: flex; flex-wrap: wrap; gap: 16px;">
+          <div class="spx-loan-metric"><span>Amount</span><strong>${moneyINR(l.amount)}</strong></div>
+          <div class="spx-loan-metric"><span>Interest</span><strong>${Number(l.interest_rate||0).toFixed(2)}%</strong></div>
+          <div class="spx-loan-metric"><span>EMI</span><strong>${moneyINR(l.emi)}</strong></div>
+          <div class="spx-loan-metric"><span>Outstanding</span><strong>${moneyINR(l.outstanding_principal)}</strong></div>
+        </div>
+      </div>
+
+      <!-- Hidden Expandable Drawer -->
+      <div class="loan-card-details" style="display: none; border-top: 1px dashed #e2e8f0; margin-top: 14px; padding-top: 14px;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 12px;">
+          <div><span style="font-size: 11px; color: #64748b; display: block; margin-bottom: 4px;">Tenure Period</span><span style="font-size: 13px; font-weight: 600; color: #1e293b;">${l.tenure_months || '-'} Months</span></div>
+          <div><span style="font-size: 11px; color: #64748b; display: block; margin-bottom: 4px;">Employment Type</span><span style="font-size: 13px; font-weight: 600; color: #1e293b;">${empType}</span></div>
+          <div><span style="font-size: 11px; color: #64748b; display: block; margin-bottom: 4px;">Monthly Income</span><span style="font-size: 13px; font-weight: 600; color: #1e293b;">${moneyINR(monthlyInc)}</span></div>
+          <div><span style="font-size: 11px; color: #64748b; display: block; margin-bottom: 4px;">Application Status</span><span style="font-size: 13px; font-weight: 600; color: #2563eb;">${l.status === 'PENDING' ? 'Under Document Verification' : l.status}</span></div>
+        </div>
+        <div>
+          <span style="font-size: 11px; color: #64748b; display: block; margin-bottom: 4px;">Purpose / Reason</span>
+          <p style="font-size: 13px; color: #475569; background: #f8fafc; padding: 10px; border-radius: 6px; margin: 0; border: 1px solid #e2e8f0;">${purpose}</p>
+        </div>
+        ${l.admin_notes ? `<div style="margin-top:12px;font-size:11px;color:#666"><b>Admin note:</b> ${l.admin_notes}</div>` : ''}
+      </div>
+    </div>`;
+}).join('');
+
+box.querySelectorAll('.loan-card-item').forEach(item => {
+    item.addEventListener('mouseenter', () => item.style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)');
+    item.addEventListener('mouseleave', () => item.style.boxShadow = '');
+    item.querySelector('.loan-card-summary').addEventListener('click', function() {
+        const details = item.querySelector('.loan-card-details');
+        const chevron = item.querySelector('.chevron-icon');
+        const isHidden = details.style.display === 'none';
+        details.style.display = isHidden ? 'block' : 'none';
+        if (chevron) chevron.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+    });
+});
+
+const active=d.loans.filter(l=>l.status==='ACTIVE');const pay=document.getElementById('loan-payment-container');if(!active.length){pay.innerHTML='<div class="spx-loan-empty">No active loan is currently available for repayment.</div>';return;}pay.innerHTML=`<div class="spx-loan-payment-box"><label>Loan<select id="repay-loan-select">${active.map(l=>{const refDisplay = l.reference_id ? l.reference_id : `#LN-${l.id}`; return `<option value="${l.id}">${refDisplay} · ${l.loan_type} · Outstanding ${moneyINR(l.outstanding_principal)}</option>`;}).join('')}</select></label><label>Payment Amount (₹)<input id="repay-amount" type="number" min="1" step="100" placeholder="Enter amount"></label><button class="spx-loan-primary" onclick="paySelectedLoan()">Pay Loan</button></div><div id="loan-payment-history" style="margin-top:15px"></div>`;loadLoanPaymentHistory(active[0].id);}catch(e){box.innerHTML='<div class="spx-loan-empty">Unable to load loan records.</div>';}}
 async function loadLoanPaymentHistory(id){const box=document.getElementById('loan-payment-history');if(!box)return;try{const r=await fetch(`/api/loans/${id}/payments`,{credentials:'include'}),d=await r.json();if(!d.success||!d.payments.length){box.innerHTML='';return;}box.innerHTML='<table class="spx-loan-table"><thead><tr><th>Date</th><th>Reference</th><th>Amount</th><th>Principal</th><th>Interest</th><th>Outstanding</th></tr></thead><tbody>'+d.payments.map(p=>`<tr><td>${p.paid_at}</td><td>${p.reference_id}</td><td>${moneyINR(p.amount)}</td><td>${moneyINR(p.principal_component)}</td><td>${moneyINR(p.interest_component)}</td><td>${moneyINR(p.balance_after)}</td></tr>`).join('')+'</tbody></table>';}catch(e){}}
 async function paySelectedLoan(){const id=document.getElementById('repay-loan-select')?.value, amount=Number(document.getElementById('repay-amount')?.value||0);if(!id||amount<=0){showToast('Enter a repayment amount.','error');return;}if(!confirm(`Pay ${moneyINR(amount)} toward loan #LN-${id}?`))return;const r=await fetch(`/api/loans/${id}/pay`,{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({amount})});const d=await r.json();if(!d.success){showToast(d.message||'Loan payment failed.','error');return;}showToast(`Payment successful. Reference ${d.referenceId}`,'success');loadMyLoans();}

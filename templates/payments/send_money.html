@@ -30,8 +30,8 @@
             <div class="yono-sm-form-container">
                 <h3 class="yono-sm-section-title">Beneficiary Details</h3>
                 <div class="yono-sm-form-row">
-                    <div class="yono-sm-form-group"><label>Account Number</label><input id="send-account" type="text" inputmode="numeric" placeholder="Enter account number"></div>
-                    <div class="yono-sm-form-group"><label>Confirm Account Number</label><input id="send-account-confirm" type="text" inputmode="numeric" placeholder="Re-enter account number"></div>
+                    <div class="yono-sm-form-group"><label>Account Number</label><input id="send-account" type="text" inputmode="numeric" maxlength="12" pattern="\d{12}" placeholder="Enter 12-digit Account Number"></div>
+                    <div class="yono-sm-form-group"><label>Confirm Account Number</label><input id="send-account-confirm" type="text" inputmode="numeric" maxlength="12" pattern="\d{12}" placeholder="Re-enter 12-digit Account Number"></div>
                 </div>
                 <div class="yono-sm-form-row">
                     <div class="yono-sm-form-group" style="flex:1"><label>Account Name</label><div class="yono-sm-input-with-btn"><input id="send-recipient-name" type="text" readonly placeholder="Name will appear after verification"><button type="button" id="send-verify-btn" class="yono-sm-verify-btn" onclick="verifySendBeneficiary()">Verify</button></div><div id="send-recipient-verified" class="yono-recipient-verified">✓ Recipient verified</div></div>

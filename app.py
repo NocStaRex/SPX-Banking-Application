@@ -694,7 +694,7 @@ def register():
         
         account_number = None
         for _ in range(100):
-            candidate = f"#8849-{random.randint(1000, 9999)}-{random.randint(1000, 9999)}"
+            candidate = f"884901{random.randint(100000, 999999)}"
             cursor.execute("SELECT id FROM users WHERE account_number=%s", (candidate,))
             if not cursor.fetchone():
                 account_number = candidate
@@ -1066,10 +1066,13 @@ def me():
 @login_required
 def verify_beneficiary():
     data = request.json or {}
-    account_number = (data.get('accountNumber') or '').strip()
-    confirm = (data.get('confirmAccountNumber') or '').strip()
+    account_number = (data.get('accountNumber') or '').strip().replace('#', '').replace('-', '')
+    confirm = (data.get('confirmAccountNumber') or '').strip().replace('#', '').replace('-', '')
     if not account_number or account_number != confirm:
         return jsonify({'success': False, 'message': 'Account numbers do not match.'}), 400
+    import re
+    if not re.fullmatch(r'\d{12}', account_number):
+        return jsonify({'success': False, 'message': 'Please enter a valid 12-digit account number.'}), 400
     try:
         conn = get_db_connection(); cursor = conn.cursor(dictionary=True)
         cursor.execute("SELECT id, first_name, last_name, account_number, account_status FROM users WHERE account_number=%s", (account_number,))
@@ -1098,6 +1101,8 @@ def transfer():
     data = request.json or {}
     to_account = (data.get('toAccount') or '').strip()
     note = (data.get('note') or '').strip()[:255]
+    to_account = to_account.replace('#', '').replace('-', '')
+    import re
     try:
         amount = Decimal(str(data.get('amount')))
     except (InvalidOperation, TypeError, ValueError):

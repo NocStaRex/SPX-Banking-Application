@@ -867,7 +867,8 @@ function handleLogout() {
 function triggerQuickAction(actionName) {
     if (actionName === 'Overview') { window.location.href = '/home/landingPage/homePage'; return; }
     if (actionName === 'Accounts dashboard' || actionName === 'Accounts') { window.location.href = '/home/landingPage/manageRelationship/transactionAccounts'; return; }
-    const loanActions = ['Loans Info','Apply for Loan','Personal Loan','Home Loan','Education Loan','Gold Loan','Loan Against Mutual Fund','Overdraft against Deposit','View Existing Loans','Manage Loans','Calculate Loan EMI','Check your Credit Score','View Loan Details'];
+    if (actionName === 'Personal Loan') { window.location.href = '/home/landingPage/loans/personal-loan/'; return; }
+    const loanActions = ['Loans Info','Apply for Loan','Home Loan','Education Loan','Gold Loan','Loan Against Mutual Fund','Overdraft against Deposit','View Existing Loans','Manage Loans','Calculate Loan EMI','Check your Credit Score','View Loan Details'];
     if (loanActions.includes(actionName)) { window.location.href = '/home/landingPage/loans'; return; }
     if (actionName === 'Fund Transfer' || actionName === 'Send Money') { window.location.href = '/home/landingPage/profilePage/send-money/fund-transfer'; return; }
     showTimeoutModal("This feature is currently under development.");

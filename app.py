@@ -598,6 +598,23 @@ def customer_loans_page():
     return render_template('loans.html', user=user, user_initials=user['initials'], account_number=user['account_number'], balance=user['balance'])
 # -------------------
 
+@app.route('/home/landingPage/loans/personal-loan/')
+@login_required
+def personal_loan_landing_page():
+    user = get_customer_context(flask_session['user_id'])
+    if not user or user['account_status'] != 'ACTIVE':
+        return redirect('/registration/welcome')
+    return render_template('loans_personal.html', user=user, user_initials=user['initials'], account_number=user['account_number'], balance=user['balance'])
+
+@app.route('/home/landingPage/loans/personal-loan/apply/')
+@login_required
+def personal_loan_apply_page():
+    user = get_customer_context(flask_session['user_id'])
+    if not user or user['account_status'] != 'ACTIVE':
+        return redirect('/registration/welcome')
+    return render_template('loans_personal_apply.html', user=user, user_initials=user['initials'], account_number=user['account_number'], balance=user['balance'])
+# -------------------
+
 @app.route('/api/register', methods=['POST'])
 def register():
     data = request.json

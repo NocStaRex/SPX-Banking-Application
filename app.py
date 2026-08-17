@@ -145,6 +145,7 @@ def run_migrations():
         "ALTER TABLE loans ADD COLUMN disbursed_at TIMESTAMP NULL",
         "ALTER TABLE loans ADD COLUMN outstanding_principal DECIMAL(15,2) DEFAULT 0",
         "ALTER TABLE loans ADD COLUMN next_emi_date DATE NULL",
+        "ALTER TABLE loans ADD COLUMN reference_id VARCHAR(50) NULL UNIQUE",
         """CREATE TABLE IF NOT EXISTS loan_payments (
             id INT AUTO_INCREMENT PRIMARY KEY,
             loan_id INT NOT NULL,
@@ -1400,12 +1401,17 @@ def customer_apply_loan():
             return jsonify({'success': False, 'message': 'You already have three active/pending loan applications.'}), 409
         rate = Decimal(str(LOAN_RATES[loan_type]))
         emi = calculate_loan_emi(amount, rate, tenure)
-        cursor.execute("""INSERT INTO loans (user_id, loan_type, amount, interest_rate, tenure_months, emi, status, purpose, employment_type, monthly_income, existing_emi, outstanding_principal)
-                       VALUES (%s,%s,%s,%s,%s,%s,'PENDING',%s,%s,%s,%s,%s)""",
-                       (user_id, loan_type, amount, rate, tenure, emi, purpose or None, employment_type, monthly_income, existing_emi, amount))
+        
+        date_token = datetime.now().strftime("%y%m%d")
+        unique_token = random.randint(10000, 99999)
+        reference_id = f"SPXPL{date_token}{unique_token}"
+        
+        cursor.execute("""INSERT INTO loans (user_id, loan_type, amount, interest_rate, tenure_months, emi, status, purpose, employment_type, monthly_income, existing_emi, outstanding_principal, reference_id)
+                       VALUES (%s,%s,%s,%s,%s,%s,'PENDING',%s,%s,%s,%s,%s,%s)""",
+                       (user_id, loan_type, amount, rate, tenure, emi, purpose or None, employment_type, monthly_income, existing_emi, amount, reference_id))
         loan_id = cursor.lastrowid
         conn.commit()
-        return jsonify({'success': True, 'message': 'Loan application submitted successfully.', 'loan_id': loan_id, 'emi': float(emi), 'interest_rate': float(rate), 'status': 'PENDING'})
+        return jsonify({'success': True, 'message': 'Loan application submitted successfully.', 'loan_id': loan_id, 'reference_id': reference_id, 'emi': float(emi), 'interest_rate': float(rate), 'status': 'PENDING'})
     except Exception as e:
         conn.rollback(); print(f'[CUSTOMER LOAN APPLY ERROR] {e}')
         return jsonify({'success': False, 'message': 'Unable to submit loan application.'}), 500

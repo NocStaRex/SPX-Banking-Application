@@ -516,11 +516,12 @@ def transaction_payload(rows):
     labels = {
         'TRANSFER_OUT': 'Money Sent', 'TRANSFER_IN': 'Money Received',
         'DEPOSIT': 'Deposit', 'WITHDRAWAL': 'Withdrawal',
-        'ADMIN_CREDIT': 'Admin Credit', 'ADMIN_DEBIT': 'Admin Debit'
+        'ADMIN_CREDIT': 'Admin Credit', 'ADMIN_DEBIT': 'Admin Debit',
+        'CREDIT': 'Credit', 'DEBIT': 'Debit'
     }
     result=[]
     for r in rows:
-        incoming = r['type'] in ('TRANSFER_IN','DEPOSIT','ADMIN_CREDIT')
+        incoming = r['type'] in ('TRANSFER_IN','DEPOSIT','ADMIN_CREDIT', 'CREDIT')
         result.append({
             'id': r['id'], 'type': r['type'], 'typeLabel': labels.get(r['type'], r['type']),
             'amount': f"{Decimal(str(r['amount'] or 0)):,.2f}",
@@ -1932,7 +1933,7 @@ def admin_loan_action(loan_id):
             cursor.execute("UPDATE users SET balance=%s WHERE id=%s", (new_balance, loan['user_id']))
             cursor.execute("UPDATE loans SET status='ACTIVE', admin_notes=%s, disbursed_at=%s, outstanding_principal=%s, next_emi_date=%s WHERE id=%s", (notes, now, loan['amount'], next_date, loan_id))
             cursor.execute("""INSERT INTO transactions (user_id,type,amount,counterparty_account,counterparty_name,note,description,reference_id,status,balance_after)
-                           VALUES (%s,'LOAN_DISBURSEMENT',%s,%s,'SPX BANK','Loan disbursement',%s,%s,'COMPLETED',%s)""", (loan['user_id'], loan['amount'], user['account_number'], f'{loan["loan_type"]} Loan #{loan_id}', ref, new_balance))
+                           VALUES (%s,'CREDIT',%s,%s,'SPX BANK','Loan disbursement',%s,%s,'COMPLETED',%s)""", (loan['user_id'], loan['amount'], user['account_number'], f'LOAN_DISBURSEMENT - {loan["loan_type"]} Loan #{loan_id}', ref, new_balance))
             new_status = 'ACTIVE'
         elif action == 'ACTIVATE':
             if prev_status != 'APPROVED': return jsonify({'success': False, 'message': 'Only approved loans can be activated. Use DISBURSE to credit the customer balance.'}), 400

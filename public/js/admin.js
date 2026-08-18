@@ -288,7 +288,7 @@ async function loadUserDetailData() {
                 <tr>
                     <td style="font-family: var(--font-mono); font-size: 11px;">${tx.reference_id || tx.id}</td>
                     <td><strong>${tx.type}</strong></td>
-                    <td style="color: ${tx.type.includes('CREDIT') ? '#15803d' : '#b91c1c'}; font-weight: 700;">₹${tx.amount.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+                    <td style="color: ${['CREDIT', 'TRANSFER_IN', 'DEPOSIT', 'ADMIN_CREDIT'].includes(tx.type) ? '#15803d' : '#b91c1c'}; font-weight: 700;">${['CREDIT', 'TRANSFER_IN', 'DEPOSIT', 'ADMIN_CREDIT'].includes(tx.type) ? '+' : '-'}₹${tx.amount.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
                     <td style="font-size: 12px;">₹${tx.balance_after.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
                     <td style="font-size: 11px; color: var(--admin-text-muted);">${tx.created_at}</td>
                 </tr>
@@ -664,7 +664,7 @@ async function loadTransactionsTable() {
                 <div style="font-size: 11px; color: var(--admin-text-muted);">${tx.account_number}</div>
             </td>
             <td><strong>${tx.type}</strong></td>
-            <td style="color: ${tx.type.includes('CREDIT') ? '#15803d' : '#b91c1c'}; font-weight: 700;">₹${tx.amount.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+            <td style="color: ${['CREDIT', 'TRANSFER_IN', 'DEPOSIT', 'ADMIN_CREDIT'].includes(tx.type) ? '#15803d' : '#b91c1c'}; font-weight: 700;">${['CREDIT', 'TRANSFER_IN', 'DEPOSIT', 'ADMIN_CREDIT'].includes(tx.type) ? '+' : '-'}₹${tx.amount.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
             <td>₹${tx.balance_after.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
             <td><span class="status-badge active">${tx.status}</span></td>
             <td style="font-size: 11px; color: var(--admin-text-muted);">${tx.created_at}</td>

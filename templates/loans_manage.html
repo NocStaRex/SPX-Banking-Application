@@ -39,13 +39,9 @@
           </div>
 
           <!-- Compact Glassmorphism Account Chip -->
-          <div class="account-chip px-3 py-2 rounded-3 text-end" 
-               style="background: rgba(255, 255, 255, 0.12); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 12px; padding: 12px 16px; text-align: right;">
-            <span class="text-white-50 d-block fs-8 fw-medium" style="display: block; font-size: 12px; color: rgba(255, 255, 255, 0.7); font-weight: 500;">Primary Account</span>
-            <span class="fw-bold fs-7 letter-spacing-1" style="font-size: 14px; font-weight: 700; letter-spacing: 1px;">{{ account_number }}</span>
-            <div class="text-emerald-300 fs-8 mt-1" style="color: #a7f3d0; font-size: 12px; margin-top: 4px;">
-              Bal: <span class="fw-semibold text-white" style="font-weight: 600; color: white;">₹{{ balance }}</span>
-            </div>
+          <div class="bg-white bg-opacity-10 border border-white border-opacity-20 rounded-3 px-3 py-2 text-end text-white">
+            <div class="text-white-50 text-uppercase" style="font-size: 10px; letter-spacing: 0.5px;">Linked Account</div>
+            <div class="fw-bold font-monospace small">•••• {{ (account_number|string)[-4:] if account_number else '3928' }}</div>
           </div>
         </div>
 

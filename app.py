@@ -522,8 +522,37 @@ def transaction_payload(rows):
     result=[]
     for r in rows:
         incoming = r['type'] in ('TRANSFER_IN','DEPOSIT','ADMIN_CREDIT', 'CREDIT')
+        
+        t_type = r['type']
+        desc = r.get('description') or ''
+        note = r.get('note') or ''
+        c_name = r.get('counterparty_name') or 'Unknown'
+        c_acc = r.get('counterparty_account') or ''
+        c_acc_last4 = c_acc[-4:] if len(c_acc) >= 4 else c_acc
+        ref_id = r.get('reference_id') or f"TXN-{r['id']}"
+        
+        if t_type == 'CREDIT' and ('Loan' in note or 'LOAN' in desc):
+            title = 'Loan Disbursal - Personal Loan'
+            subtext = f'Ref: {ref_id} • SPX Bank'
+        elif t_type == 'TRANSFER_OUT':
+            title = f'Transfer to {c_name}'
+            subtext = f'SPX Transfer • A/C ••••{c_acc_last4}' if c_acc_last4 else 'SPX Transfer'
+        elif t_type == 'TRANSFER_IN':
+            title = f'Transfer from {c_name}'
+            subtext = f'SPX Transfer • A/C ••••{c_acc_last4}' if c_acc_last4 else 'SPX Transfer'
+        elif t_type == 'DEBIT' and ('EMI' in note.upper() or 'LOAN' in desc.upper()):
+            title = 'EMI Repayment - Personal Loan'
+            subtext = f'Auto-Debit • Ref: {ref_id}'
+        elif t_type == 'ADMIN_CREDIT':
+            title = 'Account Credit - Adjustment'
+            subtext = f'SPX Desk • Ref: SPXAD{r["id"]}'
+        else:
+            title = desc if desc else 'Net-Banking Transaction'
+            subtext = f'SPX Net-Banking • Ref: SPX-{r["id"]}'
+
         result.append({
             'id': r['id'], 'type': r['type'], 'typeLabel': labels.get(r['type'], r['type']),
+            'title': title, 'subtext': subtext,
             'amount': f"{Decimal(str(r['amount'] or 0)):,.2f}",
             'direction': 'IN' if incoming else 'OUT',
             'counterpartyAccount': r.get('counterparty_account'),

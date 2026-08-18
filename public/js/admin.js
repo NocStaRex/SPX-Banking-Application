@@ -286,8 +286,11 @@ async function loadUserDetailData() {
         } else {
             txBody.innerHTML = data.transactions.map(tx => `
                 <tr>
-                    <td style="font-family: var(--font-mono); font-size: 11px;">${tx.reference_id || tx.id}</td>
-                    <td><strong>${tx.type}</strong></td>
+                    <td style="font-family: var(--font-mono); font-size: 11px;">${tx.reference_id || tx.referenceId || tx.id}</td>
+                    <td>
+                        <div class="fw-bold text-dark small" style="font-weight: 700; font-size: 13px; margin-bottom: 2px;">${tx.title || tx.type}</div>
+                        <div class="text-muted font-monospace" style="font-size: 11px; color: #64748b;">${tx.subtext || tx.description || ''}</div>
+                    </td>
                     <td style="color: ${['CREDIT', 'TRANSFER_IN', 'DEPOSIT', 'ADMIN_CREDIT'].includes(tx.type) ? '#15803d' : '#b91c1c'}; font-weight: 700;">${['CREDIT', 'TRANSFER_IN', 'DEPOSIT', 'ADMIN_CREDIT'].includes(tx.type) ? '+' : '-'}₹${tx.amount.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
                     <td style="font-size: 12px;">₹${tx.balance_after.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
                     <td style="font-size: 11px; color: var(--admin-text-muted);">${tx.created_at}</td>
@@ -663,7 +666,10 @@ async function loadTransactionsTable() {
                 <div style="font-weight: 600;">${tx.first_name} ${tx.last_name}</div>
                 <div style="font-size: 11px; color: var(--admin-text-muted);">${tx.account_number}</div>
             </td>
-            <td><strong>${tx.type}</strong></td>
+            <td>
+                <div class="fw-bold text-dark small" style="font-weight: 700; font-size: 13px; margin-bottom: 2px;">${tx.title || tx.type}</div>
+                <div class="text-muted font-monospace" style="font-size: 11px; color: #64748b;">${tx.subtext || tx.description || ''}</div>
+            </td>
             <td style="color: ${['CREDIT', 'TRANSFER_IN', 'DEPOSIT', 'ADMIN_CREDIT'].includes(tx.type) ? '#15803d' : '#b91c1c'}; font-weight: 700;">${['CREDIT', 'TRANSFER_IN', 'DEPOSIT', 'ADMIN_CREDIT'].includes(tx.type) ? '+' : '-'}₹${tx.amount.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
             <td>₹${tx.balance_after.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
             <td><span class="status-badge active">${tx.status}</span></td>

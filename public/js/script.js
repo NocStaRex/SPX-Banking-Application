@@ -1415,9 +1415,14 @@ async function loadTransactionHistory() {
             const incoming = tx.direction === 'IN';
             const sign = incoming ? '+' : '-';
             const color = incoming ? '#15803d' : '#b91c1c';
-            return `<div class="yono-transaction-row" style="display:grid;grid-template-columns:1.2fr 2fr 1fr 1fr;gap:12px;padding:14px 8px;border-bottom:1px solid #eee;align-items:center;font-size:12px">
-                <div>${tx.date}</div><div><strong>${tx.typeLabel}</strong><br><span style="color:#777">${tx.counterpartyName || tx.description || tx.note || '-'}</span>${tx.counterpartyAccount ? `<br><small>${tx.counterpartyAccount}</small>` : ''}</div>
-                <div style="font-weight:700;color:${color}">${sign}₹${tx.amount}</div><div style="font-weight:600">₹${tx.balanceAfter}</div>
+            return `<div class="yono-transaction-row" style="display:grid;grid-template-columns:20% 45% 18% 17%;gap:0;padding:14px 8px;border-bottom:1px solid #eee;align-items:center;font-size:12px">
+                <div style="text-align:left;">${tx.date}</div>
+                <div style="text-align:left; padding-left: 0;">
+                    <div class="fw-bold text-dark small" style="font-weight: 700; font-size: 13px; margin-bottom: 2px;">${tx.title || tx.typeLabel}</div>
+                    <div class="text-muted font-monospace" style="font-size: 11px; color: #64748b;">${tx.subtext || tx.description}</div>
+                </div>
+                <div style="font-weight:700;color:${color};text-align:right;padding-right:12px;">${sign}₹${tx.amount}</div>
+                <div style="font-weight:600;text-align:right;">₹${tx.balanceAfter}</div>
             </div>`;
         }).join('');
     } catch (e) {

@@ -178,7 +178,7 @@ def run_migrations():
             id INT AUTO_INCREMENT PRIMARY KEY,
             user_id INT NOT NULL UNIQUE,
             online_banking BOOLEAN DEFAULT TRUE,
-            fund_transfer BOOLEAN DEFAULT FALSE,
+            fund_transfer BOOLEAN DEFAULT TRUE,
             card_access BOOLEAN DEFAULT TRUE,
             loan_application BOOLEAN DEFAULT TRUE,
             high_value_transfer BOOLEAN DEFAULT FALSE,
@@ -745,12 +745,11 @@ def register():
         cursor.execute(sql, (username, email, hashed_pw, first_name, last_name, account_number, mid_number, 25000.00))
         new_user_id = cursor.lastrowid
 
-        # New users start WITHOUT fund transfer access — admin must verify
-        # them first. Everything else defaults on since only transfers were
-        # asked to be gated.
+        # New users start WITH fund transfer access enabled by default.
+        # High value transfer remains disabled by default.
         cursor.execute(
-            """INSERT INTO user_privileges (user_id, online_banking, fund_transfer, card_access, loan_application)
-               VALUES (%s, TRUE, FALSE, TRUE, TRUE)""",
+            """INSERT INTO user_privileges (user_id, online_banking, fund_transfer, card_access, loan_application, high_value_transfer)
+               VALUES (%s, TRUE, TRUE, TRUE, TRUE, FALSE)""",
             (new_user_id,)
         )
         cursor.execute("INSERT INTO add_info (user_id) VALUES (%s)", (new_user_id,))
@@ -758,26 +757,26 @@ def register():
 
         # Let the admin know a new account needs verification
         try:
-            admin_subject = "New User Registration — Verification Needed"
+            admin_subject = "New User Registration — Review Required"
             admin_plain = (
-                f"A new user has registered and needs fund-transfer verification.\n\n"
+                f"A new user has registered and has been granted basic fund-transfer access.\n\n"
                 f"Name: {first_name} {last_name}\n"
                 f"Username: {username}\n"
                 f"Email: {email}\n"
                 f"Account Number: {account_number}\n\n"
-                f"Approve fund transfer access from the Admin Dashboard: /admin/users/{new_user_id}"
+                f"Review the account or grant High-Value transfer access from the Admin Dashboard: /admin/users/{new_user_id}"
             )
             admin_html = f"""
             <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 24px; background:#ffffff; border:1px solid #eaeaea; border-radius:8px;">
                 <h2 style="color:#111827; font-size:18px;">New User Registration</h2>
-                <p style="color:#4b5563; font-size:14px;">A new account has registered and is <strong>awaiting fund-transfer verification</strong>:</p>
+                <p style="color:#4b5563; font-size:14px;">A new account has registered and been granted <strong>basic fund-transfer access</strong>:</p>
                 <table style="width:100%; font-size:13px; color:#374151; border-collapse:collapse; margin:16px 0;">
                     <tr><td style="padding:4px 0; font-weight:600;">Name:</td><td>{first_name} {last_name}</td></tr>
                     <tr><td style="padding:4px 0; font-weight:600;">Username:</td><td>{username}</td></tr>
                     <tr><td style="padding:4px 0; font-weight:600;">Email:</td><td>{email}</td></tr>
                     <tr><td style="padding:4px 0; font-weight:600;">Account #:</td><td>{account_number}</td></tr>
                 </table>
-                <p style="color:#6b7280; font-size:12px;">Log in to the Admin Dashboard to review and grant fund transfer access.</p>
+                <p style="color:#6b7280; font-size:12px;">Log in to the Admin Dashboard to review the account or enable High-Value transfers.</p>
             </div>
             """
             send_real_email(ADMIN_EMAIL, admin_subject, admin_html, admin_plain)

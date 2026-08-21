@@ -638,7 +638,16 @@ def loans_manage():
     if not user or user['account_status'] != 'ACTIVE':
         return redirect('/registration/welcome')
     return render_template('loans/loans_manage.html', user=user, user_initials=user['initials'], account_number=user['account_number'], balance=user['balance'])
-# -------------------
+
+# --- CARDS MODULE ROUTES ---
+@app.route('/cards/debit-cards')
+def debit_cards():
+    return render_template('cards/debit_cards/debit_cards.html')
+
+@app.route('/cards/credit-cards')
+def credit_cards():
+    return render_template('cards/credit_cards/credit_cards.html')
+# ---------------------------
 
 @app.route('/home/landingPage/loans/personal-loan/')
 @login_required

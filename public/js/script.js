@@ -829,7 +829,7 @@ function checkExistingSession() {
     const sessionStr = sessionStorage.getItem('bank_active_session');
     if (!sessionStr) return;
 
-    const onOverviewPage = window.location.pathname.startsWith('/home/landingPage/');
+    const onOverviewPage = window.location.pathname.startsWith('/home/landingPage/') || window.location.pathname.startsWith('/cards/');
 
     try {
         const user = JSON.parse(sessionStr);

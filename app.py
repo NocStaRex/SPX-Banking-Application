@@ -641,8 +641,12 @@ def loans_manage():
 
 # --- CARDS MODULE ROUTES ---
 @app.route('/cards/debit-cards')
+@login_required
 def debit_cards():
-    return render_template('cards/debit_cards/debit_cards.html')
+    user = get_customer_context(flask_session['user_id'])
+    if not user or user['account_status'] != 'ACTIVE':
+        return redirect('/registration/welcome')
+    return render_template('cards/debit_cards/debit_cards.html', user=user, user_initials=user['initials'], account_number=user['account_number'], balance=user['balance'])
 
 @app.route('/cards/credit-cards')
 def credit_cards():
